@@ -44,4 +44,36 @@ struct shader_program {
   // uniform locations mapped to name
   std::map<std::string, GLint> u_locs{};
 };
+
+struct planet {
+  planet():
+  m_size{1.0f},
+  m_rot_speed{1.0f},
+  m_origin_dis{1.0f},
+  m_moon{false}
+  {}
+
+  planet(float size, float speed, float distance):
+  m_size{size},
+  m_rot_speed{speed},
+  m_origin_dis{distance},
+  m_moon{false}
+  {}
+
+  planet(float size, float speed, float distance, bool moon):
+  m_size{size},
+  m_rot_speed{speed},
+  m_origin_dis{distance},
+  m_moon{moon}
+  {}
+
+  // size
+  float m_size;
+  // rotation speed
+  float m_rot_speed;
+  // distance to origin
+  float m_origin_dis;
+  // if moon then 'true'
+  bool m_moon;
+};
 #endif

@@ -9,7 +9,7 @@
 // use gl definitions from glbinding 
 using namespace gl;
 
-//dont load gl bindings from glfw
+// dont load gl bindings from glfw
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
@@ -25,14 +25,57 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
 {
   initializeGeometry();
   initializeShaderPrograms();
+
+  // planets
+  // {size, speed_of_rotation, distance_to_origin}
+  planet sonne{3.0f, 0.1f, 0.0f};
+  planet merkur{log(4.9f)*0.1f, 87.0f*0.0003f, log(5.8f)*2.5f};
+  planet venus{log(12.0f)*0.1f, 200.0f*0.0003f, log(10.8f)*2.5f};
+  planet erde{log(13.0f)*0.1f, 365.0f*0.0003f, log(15.0f)*2.5f};
+  planet mars{log(6.8f)*0.1f, 600.0f*0.0003f, log(22.8f)*2.5f};
+  planet jupiter{log(142.0f)*0.1f, 450.0f*0.0003f, log(77.8f)*2.5f};
+  planet saturn{log(120.0f)*0.1f, 350.0f*0.0003f, log(143.0f)*2.5f};
+  planet uranus{log(51.0f)*0.1f, 400.0f*0.0003f, log(288.0f)*2.5f};
+  planet neptun{log(48.0f)*0.1f, 40.0f*0.0003f, log(450.0f)*2.5f};
+  planet pluto{log(2.3f)*0.1f, 160.0f*0.0003f, log(460.0f)*2.8f};
+  planet mond{log(3.4f)*0.1f, 365.0f*0.0003f, log(15.0f)*2.5f, true};
+  // planet pointer
+  auto p_sonne    = std::make_shared<planet>(sonne);
+  auto p_merkur   = std::make_shared<planet>(merkur);
+  auto p_venus    = std::make_shared<planet>(venus);
+  auto p_erde     = std::make_shared<planet>(erde);
+  auto p_mars     = std::make_shared<planet>(mars);
+  auto p_jupiter  = std::make_shared<planet>(jupiter);
+  auto p_saturn   = std::make_shared<planet>(saturn);
+  auto p_uranus   = std::make_shared<planet>(uranus);
+  auto p_neptun   = std::make_shared<planet>(neptun);
+  auto p_pluto    = std::make_shared<planet>(pluto);
+  auto p_mond     = std::make_shared<planet>(mond);
+  // vector with planet pointers
+  all_planets.insert(std::end(all_planets),{p_sonne, p_merkur, p_venus,
+    p_erde, p_mars, p_jupiter, p_saturn, p_uranus, p_neptun, p_pluto, p_mond});
 }
 
-void ApplicationSolar::render() const {
-  // bind shader to upload uniforms
-  glUseProgram(m_shaders.at("planet").handle);
+// upload planets
+void ApplicationSolar::upload_planet_transforms(std::shared_ptr<planet> planet) const {
 
-  glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime()), glm::fvec3{0.0f, 1.0f, 0.0f});
-  model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, -1.0f});
+  // first rotation
+  glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime())*planet->m_rot_speed, glm::fvec3{0.0f, 1.0f, 0.0f});
+  // first distance (distance to origin)
+  model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, planet->m_origin_dis});
+  
+  // if moon, rotate around earth
+  if (planet->m_moon == true) {
+    // second rotation
+    model_matrix = glm::rotate(model_matrix, float(glfwGetTime())*2.7f, glm::fvec3{0.0f, 1.0f, 0.0f});
+    // second distance (distance to earth)
+    model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, 0.5f});
+  }
+
+  // scale the planet
+  model_matrix = glm::scale(model_matrix, glm::fvec3(planet->m_size,planet->m_size,planet->m_size));
+
+  // shader it
   glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ModelMatrix"),
                      1, GL_FALSE, glm::value_ptr(model_matrix));
 
@@ -46,11 +89,24 @@ void ApplicationSolar::render() const {
 
   // draw bound vertex array using bound shader
   glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
+};
+
+void ApplicationSolar::render() const {
+  
+  // bind shader to upload uniforms
+  glUseProgram(m_shaders.at("planet").handle);
+  
+  // load planets
+  for (unsigned int i = 0; i < all_planets.size(); ++i) {
+    upload_planet_transforms(all_planets[i]);
+  }
+
 }
 
 void ApplicationSolar::updateView() {
   // vertices are transformed in camera space, so camera transform must be inverted
   glm::fmat4 view_matrix = glm::inverse(m_view_transform);
+  std::cout << "penis";
   // upload matrix to gpu
   glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ViewMatrix"),
                      1, GL_FALSE, glm::value_ptr(view_matrix));
@@ -76,18 +132,66 @@ void ApplicationSolar::uploadUniforms() {
 // handle key input
 void ApplicationSolar::keyCallback(int key, int scancode, int action, int mods) {
   if (key == GLFW_KEY_W && action == GLFW_PRESS) {
-    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, -0.1f});
+    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, -1.0f});
     updateView();
   }
   else if (key == GLFW_KEY_S && action == GLFW_PRESS) {
-    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, 0.1f});
+    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, 1.0f});
+    updateView();
+  }
+  else if (key == GLFW_KEY_A && action == GLFW_PRESS) {
+    m_view_transform = glm::translate(m_view_transform, glm::fvec3{-1.0f, 0.0f, 0.0f});
+    updateView();
+  }
+  else if (key == GLFW_KEY_D && action == GLFW_PRESS) {
+    m_view_transform = glm::translate(m_view_transform, glm::fvec3{1.0f, 0.0f, 0.0f});
     updateView();
   }
 }
 
-//handle delta mouse movement input
+// handle delta mouse movement input
 void ApplicationSolar::mouseCallback(double pos_x, double pos_y) {
-  // mouse handling
+  glm::fvec3 rotation{cos(pos_x),sin(pos_y),1.0f};
+  // Calculate our horizontal and vertical mouse movement from middle of the window
+  // double horizMovement = (pos_x);
+  // double vertMovement  = (pos_y);
+ 
+  // std::cout << "Mid window values: " << windowMidX << "\t" << windowMidY << std::endl;
+  std::cout << "Mouse values     : " << pos_x << "\t" << pos_y << std::endl;
+  // m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f,pos_y*0.01f,0.0f});
+  //m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f,1.0f,0.0f});
+
+  // Apply the mouse movement to our rotation vector. The vertical (look up and down)
+  // movement is applied on the X axis, and the horizontal (look left and right)
+  // movement is applied on the Y Axis
+  // rotation.addX(vertMovement);
+  // rotation.addY(horizMovement);
+ 
+  // Limit loking up to vertically up
+  // if (rotation.x < -90)
+  // {
+  //   rotation.setX(-90);
+  // }
+ 
+  // // Limit looking down to vertically down
+  // if (rotation.getX() > 90)
+  // {
+  //   rotation.setX(90);
+  // }
+ 
+  // // Looking left and right - keep angles in the range 0.0 to 360.0
+  // // 0 degrees is looking directly down the negative Z axis "North", 90 degrees is "East", 180 degrees is "South", 270 degrees is "West"
+  // // We can also do this so that our 360 degrees goes -180 through +180 and it works the same, but it's probably best to keep our
+  // // range to 0 through 360 instead of -180 through +180.
+  // if (rotation.getY() < 0)
+  // {
+  //   rotation.addY(360);
+  // }
+  // if (rotation.getY() > 360)
+  // {
+  //   rotation.addY(-360);
+  // }
+
 }
 
 // load shader programs

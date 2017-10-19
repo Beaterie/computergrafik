@@ -19,11 +19,14 @@ class ApplicationSolar : public Application {
   void updateProjection();
   // react to key input
   void keyCallback(int key, int scancode, int action, int mods);
-  //handle delta mouse movement input
+  // handle delta mouse movement input
   void mouseCallback(double pos_x, double pos_y);
 
   // draw all objects
   void render() const;
+
+  // upload planets
+  void upload_planet_transforms(std::shared_ptr<planet> planet) const;
 
  protected:
   void initializeShaderPrograms();
@@ -32,6 +35,7 @@ class ApplicationSolar : public Application {
 
   // cpu representation of model
   model_object planet_object;
+  std::vector<std::shared_ptr<planet>> all_planets;
 };
 
 #endif
