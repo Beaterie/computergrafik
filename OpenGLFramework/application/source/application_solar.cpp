@@ -59,16 +59,16 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
 // upload planets
 void ApplicationSolar::upload_planet_transforms(std::shared_ptr<planet> planet) const {
 
-  // first rotation
+  // main rotation
   glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime())*planet->m_rot_speed, glm::fvec3{0.0f, 1.0f, 0.0f});
-  // first distance (distance to origin)
+  // main distance (distance to origin)
   model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, planet->m_origin_dis});
   
   // if moon, rotate around earth
   if (planet->m_moon == true) {
-    // second rotation
+    // moon rotation
     model_matrix = glm::rotate(model_matrix, float(glfwGetTime())*2.7f, glm::fvec3{0.0f, 1.0f, 0.0f});
-    // second distance (distance to earth)
+    // moon distance (distance to earth)
     model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, 0.5f});
   }
 
