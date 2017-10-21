@@ -35,7 +35,13 @@ class ApplicationSolar : public Application {
 
   // cpu representation of model
   model_object planet_object;
+  // vector with planets
   std::vector<std::shared_ptr<planet>> all_planets;
+  // Hoding any keys down?
+  bool holdingForward     = false;
+  bool holdingBackward    = false;
+  bool holdingLeftStrafe  = false;
+  bool holdingRightStrafe = false;
 };
 
 #endif

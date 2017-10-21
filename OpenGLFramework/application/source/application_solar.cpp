@@ -73,7 +73,7 @@ void ApplicationSolar::upload_planet_transforms(std::shared_ptr<planet> planet) 
   }
 
   // scale the planet
-  model_matrix = glm::scale(model_matrix, glm::fvec3(planet->m_size,planet->m_size,planet->m_size));
+  model_matrix = glm::scale(model_matrix, glm::fvec3{planet->m_size,planet->m_size,planet->m_size});
 
   // shader it
   glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ModelMatrix"),
@@ -106,7 +106,7 @@ void ApplicationSolar::render() const {
 void ApplicationSolar::updateView() {
   // vertices are transformed in camera space, so camera transform must be inverted
   glm::fmat4 view_matrix = glm::inverse(m_view_transform);
-  std::cout << "penis";
+  std::cout << "updating..\n";
   // upload matrix to gpu
   glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ViewMatrix"),
                      1, GL_FALSE, glm::value_ptr(view_matrix));
@@ -131,67 +131,50 @@ void ApplicationSolar::uploadUniforms() {
 
 // handle key input
 void ApplicationSolar::keyCallback(int key, int scancode, int action, int mods) {
-  if (key == GLFW_KEY_W && action == GLFW_PRESS) {
-    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, -1.0f});
+
+  // zoom in (W)
+  if (key == GLFW_KEY_W && action == GLFW_REPEAT) {
+    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, -0.25f});
     updateView();
   }
-  else if (key == GLFW_KEY_S && action == GLFW_PRESS) {
-    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, 1.0f});
+  // zoom out (S)
+  else if (key == GLFW_KEY_S && action == GLFW_REPEAT) {
+    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, 0.25f});
     updateView();
   }
-  else if (key == GLFW_KEY_A && action == GLFW_PRESS) {
-    m_view_transform = glm::translate(m_view_transform, glm::fvec3{-1.0f, 0.0f, 0.0f});
+  // fly to the left (A)
+  else if (key == GLFW_KEY_A && action == GLFW_REPEAT) {
+    m_view_transform = glm::translate(m_view_transform, glm::fvec3{-0.25f, 0.0f, 0.0f});
     updateView();
   }
-  else if (key == GLFW_KEY_D && action == GLFW_PRESS) {
-    m_view_transform = glm::translate(m_view_transform, glm::fvec3{1.0f, 0.0f, 0.0f});
+  // fly to the right (D)
+  else if (key == GLFW_KEY_D && action == GLFW_REPEAT) {
+    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.25f, 0.0f, 0.0f});
     updateView();
   }
+  // fly to the top (SPACE)
+  else if (key == GLFW_KEY_SPACE && action == GLFW_REPEAT) {
+    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.25f, 0.0f});
+    updateView();
+  }
+  // fly to the bottom (LEFT SHIFT)
+  else if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_REPEAT) {
+    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, -0.25f, 0.0f});
+    updateView();
+  }
+
 }
 
 // handle delta mouse movement input
 void ApplicationSolar::mouseCallback(double pos_x, double pos_y) {
-  glm::fvec3 rotation{cos(pos_x),sin(pos_y),1.0f};
-  // Calculate our horizontal and vertical mouse movement from middle of the window
-  // double horizMovement = (pos_x);
-  // double vertMovement  = (pos_y);
- 
-  // std::cout << "Mid window values: " << windowMidX << "\t" << windowMidY << std::endl;
+
   std::cout << "Mouse values     : " << pos_x << "\t" << pos_y << std::endl;
-  // m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f,pos_y*0.01f,0.0f});
-  //m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f,1.0f,0.0f});
 
-  // Apply the mouse movement to our rotation vector. The vertical (look up and down)
-  // movement is applied on the X axis, and the horizontal (look left and right)
-  // movement is applied on the Y Axis
-  // rotation.addX(vertMovement);
-  // rotation.addY(horizMovement);
- 
-  // Limit loking up to vertically up
-  // if (rotation.x < -90)
-  // {
-  //   rotation.setX(-90);
-  // }
- 
-  // // Limit looking down to vertically down
-  // if (rotation.getX() > 90)
-  // {
-  //   rotation.setX(90);
-  // }
- 
-  // // Looking left and right - keep angles in the range 0.0 to 360.0
-  // // 0 degrees is looking directly down the negative Z axis "North", 90 degrees is "East", 180 degrees is "South", 270 degrees is "West"
-  // // We can also do this so that our 360 degrees goes -180 through +180 and it works the same, but it's probably best to keep our
-  // // range to 0 through 360 instead of -180 through +180.
-  // if (rotation.getY() < 0)
-  // {
-  //   rotation.addY(360);
-  // }
-  // if (rotation.getY() > 360)
-  // {
-  //   rotation.addY(-360);
-  // }
+  // camera rotation
+  m_view_transform = glm::rotate(m_view_transform, float(pos_x)*0.01f, glm::fvec3{0.0f,1.0f,0.0f});
+  m_view_transform = glm::rotate(m_view_transform, float(pos_y)*0.01f, glm::fvec3{1.0f,0.0f,0.0f});
 
+  updateView();
 }
 
 // load shader programs
