@@ -132,37 +132,80 @@ void ApplicationSolar::uploadUniforms() {
 // handle key input
 void ApplicationSolar::keyCallback(int key, int scancode, int action, int mods) {
 
-  // zoom in (W)
-  if (key == GLFW_KEY_W && action == GLFW_REPEAT) {
-    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, -0.25f});
-    updateView();
-  }
-  // zoom out (S)
-  else if (key == GLFW_KEY_S && action == GLFW_REPEAT) {
-    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, 0.25f});
-    updateView();
-  }
-  // fly to the left (A)
-  else if (key == GLFW_KEY_A && action == GLFW_REPEAT) {
-    m_view_transform = glm::translate(m_view_transform, glm::fvec3{-0.25f, 0.0f, 0.0f});
-    updateView();
-  }
-  // fly to the right (D)
-  else if (key == GLFW_KEY_D && action == GLFW_REPEAT) {
-    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.25f, 0.0f, 0.0f});
-    updateView();
-  }
-  // fly to the top (SPACE)
-  else if (key == GLFW_KEY_SPACE && action == GLFW_REPEAT) {
-    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.25f, 0.0f});
-    updateView();
-  }
-  // fly to the bottom (LEFT SHIFT)
-  else if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_REPEAT) {
-    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, -0.25f, 0.0f});
-    updateView();
-  }
+  // Two-direction-navigation is possible:
+  // 1. press button for the first direction
+  // 2. press and hold button for the second direction
+  // 3. press LEFT_SHIFT to reset the navigation
+  // 4. start again with 1.
 
+  // Also possible with three directions.
+
+  // Example:
+  // 1. press W
+  // 2. press and hold SPACE
+  // --> you fly to the top and zoom in
+  // 3. press LEFT_SHIFT to reset the navigation
+  
+
+  if (action == GLFW_REPEAT || action == GLFW_PRESS) {
+
+    // zoom in (W)
+    if (key == GLFW_KEY_W) {
+      press_W = -0.25f;
+      press_S = 0.0f;
+    }
+    // zoom out (S)
+    if (key == GLFW_KEY_S) {
+      press_S = 0.25f;
+      press_W = 0.0f;
+    }
+    // fly left (A)
+    if (key == GLFW_KEY_A) {
+      press_A = -0.25f;
+      press_D = 0.0f;
+    }
+    // fly right (D)
+    if (key == GLFW_KEY_D) {
+      press_D = 0.25f;
+      press_A = 0.0f;
+    }
+    // fly to the bottom (E)
+    if (key == GLFW_KEY_E) {
+      press_E = -0.25f;
+      press_SPACE = 0.0f;
+    }
+    // fly to the top (SPACE)
+    if (key == GLFW_KEY_SPACE) {
+      press_SPACE = 0.25f;
+      press_E = 0.0f;
+    }
+    // reset all navigation (LEFT_SHIFT)
+    if (key == GLFW_KEY_LEFT_SHIFT) {
+      press_W = 0.0f;
+      press_A = 0.0f;
+      press_S = 0.0f;
+      press_D = 0.0f;
+      press_E = 0.0f;
+      press_SPACE = 0.0f;
+    }
+    
+    // change direction
+    m_view_transform = glm::translate(m_view_transform, glm::fvec3{
+      press_A + press_D,
+      press_SPACE + press_E,
+      press_W + press_S });
+
+    // testing
+    std::cout << press_A << " " << press_D << " " << 
+      press_SPACE << " " << press_E << " " << 
+      press_W << " " << press_S << "\n";
+    // std::cout << "Key: " << key;
+    // std::cout << "\nScancode: " << scancode;
+    // std::cout << "\nAction: " << action;
+    // std::cout << "\nMods: " << mods << "\n";
+    
+    updateView();
+  }
 }
 
 // handle delta mouse movement input

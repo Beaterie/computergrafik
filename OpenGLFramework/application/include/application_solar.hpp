@@ -37,11 +37,13 @@ class ApplicationSolar : public Application {
   model_object planet_object;
   // vector with planets
   std::vector<std::shared_ptr<planet>> all_planets;
-  // Hoding any keys down?
-  bool holdingForward     = false;
-  bool holdingBackward    = false;
-  bool holdingLeftStrafe  = false;
-  bool holdingRightStrafe = false;
+  
+  float press_W = 0.0f;
+  float press_S = 0.0f;
+  float press_A = 0.0f;
+  float press_D = 0.0f;
+  float press_E = 0.0f;
+  float press_SPACE = 0.0f;
 };
 
 #endif

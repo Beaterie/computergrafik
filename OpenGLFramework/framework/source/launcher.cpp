@@ -206,7 +206,7 @@ void Launcher::key_callback(GLFWwindow* m_window, int key, int scancode, int act
   m_application->keyCallback(key, scancode, action, mods);
 }
 
-//handle mouse movement input
+// handle mouse movement input
 void Launcher::mouse_callback(GLFWwindow* window, double pos_x, double pos_y) {
   m_application->mouseCallback(pos_x, pos_y);
   // reset cursor pos to receive position delta next frame
