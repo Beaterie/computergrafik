@@ -63,6 +63,8 @@ void ApplicationSolar::upload_planet_transforms(std::shared_ptr<planet> planet) 
   glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime())*planet->m_rot_speed, glm::fvec3{0.0f, 1.0f, 0.0f});
   // main distance (distance to origin)
   model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, planet->m_origin_dis});
+  // intrinsic rotation
+  model_matrix = glm::rotate(model_matrix, float(glfwGetTime())*planet->m_intr_rot_speed, glm::fvec3{0.0f, 1.0f, 0.0f});
   
   // if moon, rotate around earth
   if (planet->m_moon == true) {

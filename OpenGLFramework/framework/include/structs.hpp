@@ -50,21 +50,32 @@ struct planet {
   m_size{1.0f},
   m_rot_speed{1.0f},
   m_origin_dis{1.0f},
-  m_moon{false}
+  m_moon{false},
+  m_intr_rot_speed{1.0f}
   {}
 
   planet(float size, float speed, float distance):
   m_size{size},
   m_rot_speed{speed},
   m_origin_dis{distance},
-  m_moon{false}
+  m_moon{false},
+  m_intr_rot_speed{1.0f}
   {}
 
   planet(float size, float speed, float distance, bool moon):
   m_size{size},
   m_rot_speed{speed},
   m_origin_dis{distance},
-  m_moon{moon}
+  m_moon{moon},
+  m_intr_rot_speed{1.0f}
+  {}
+
+  planet(float size, float speed, float distance, bool moon, float selfrot):
+  m_size{size},
+  m_rot_speed{speed},
+  m_origin_dis{distance},
+  m_moon{moon},
+  m_intr_rot_speed{selfrot}
   {}
 
   // size
@@ -75,5 +86,7 @@ struct planet {
   float m_origin_dis;
   // if moon then 'true'
   bool m_moon;
+  // intrinsic rotation speed
+  float m_intr_rot_speed;
 };
 #endif
