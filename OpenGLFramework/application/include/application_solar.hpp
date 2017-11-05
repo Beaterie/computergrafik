@@ -28,6 +28,8 @@ class ApplicationSolar : public Application {
 
   // upload planets
   void upload_planet_transforms(std::shared_ptr<planet> planet) const;
+  // generate stars
+  void ApplicationSolar::initializeStars();
 
  protected:
   void initializeShaderPrograms();
@@ -36,8 +38,10 @@ class ApplicationSolar : public Application {
 
   // cpu representation of model
   model_object planet_object;
+  model_object star_object{};
   // vector with planets
   std::vector<std::shared_ptr<planet>> all_planets;
+  std::vector<float> all_stars{};
   
   float press_W = 0.0f;
   float press_S = 0.0f;
