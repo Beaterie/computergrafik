@@ -18,6 +18,7 @@ using namespace gl;
 #include <glm/gtc/type_ptr.hpp>
 
 #include <iostream>
+#include <math.h>
 
 ApplicationSolar::ApplicationSolar(std::string const& resource_path)
  :Application{resource_path}
@@ -55,6 +56,7 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
   // vector with planet pointers
   all_planets.insert(std::end(all_planets),{p_sonne, p_merkur, p_venus,
     p_erde, p_mars, p_jupiter, p_saturn, p_uranus, p_neptun, p_pluto, p_mond});
+  initializeOrbits();
 }
 
 // upload planets
@@ -220,9 +222,9 @@ void ApplicationSolar::keyCallback(int key, int scancode, int action, int mods) 
       press_W + press_S });
 
     // testing
-    std::cout << press_A << " " << press_D << " " << 
-      press_SPACE << " " << press_E << " " << 
-      press_W << " " << press_S << "\n";
+    //std::cout << press_A << " " << press_D << " " << 
+    //  press_SPACE << " " << press_E << " " << 
+    //  press_W << " " << press_S << "\n";
     // std::cout << "Key: " << key;
     // std::cout << "\nScancode: " << scancode;
     // std::cout << "\nAction: " << action;
@@ -348,6 +350,31 @@ void ApplicationSolar::initializeGeometry() {
   planet_object.draw_mode = GL_TRIANGLES;
   // transfer number of indices to model object 
   planet_object.num_elements = GLsizei(planet_model.indices.size());
+}
+
+// generate orbits
+void ApplicationSolar::initializeOrbits() {
+  const float PI = 3.1415926;
+  // grab planets' distances to origin
+  for (int i = 0; i < all_planets.size(); ++i) {
+    std::vector<float> v;
+    auto planet = all_planets[i];
+    // points on the orbit
+    for (int i = 0; i < 360; ++i) {
+      float dist = planet.get()->m_origin_dis;
+      float x = dist*cos(i*2*PI/180);
+      float y = dist*sin(i*2*PI/180);
+      v.insert(std::end(v), {x,y});
+    }
+    // save the vector of points to the orbit object
+    orbit orb{};
+    orb.m_points = v;
+	  auto p_orbit = std::make_shared<orbit>(orb);
+    all_orbits.insert(std::end(all_orbits),p_orbit);
+  }
+  std::cout << "number of orbits: " << all_orbits.size();
+
+  
 }
 
 ApplicationSolar::~ApplicationSolar() {
