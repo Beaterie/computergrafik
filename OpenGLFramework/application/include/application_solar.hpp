@@ -28,12 +28,11 @@ class ApplicationSolar : public Application {
 
   // upload planets
   void upload_planet_transforms(std::shared_ptr<planet> planet) const;
-  // generate stars
-  void ApplicationSolar::initializeStars();
 
  protected:
   void initializeShaderPrograms();
   void initializeGeometry();
+  void initializeStars();
   void updateView();
 
   // cpu representation of model
