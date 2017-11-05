@@ -244,9 +244,9 @@ void ApplicationSolar::initializeStars() {
     float y = rand()%100.0f;
     float z = rand()%100.0f;
     // color
-    float r = 0.5f;
-    float g = 0.5f;
-    float b = 0.5f;
+    float r = 0.3f;
+    float g = 0.3f;
+    float b = 0.3f;
     // push to vector
     all_stars.insert(std::end(all_stars),{x,y,z,r,g,b});
   }
@@ -255,6 +255,9 @@ void ApplicationSolar::initializeStars() {
   glGenBuffers(1, &star_object.vertex_BO);
   // bind this as an vertex array buffer containing all attributes
   glBindBuffer(GL_ARRAY_BUFFER, star_object.vertex_BO);
+  // configure currently bound array buffer
+  glBufferData(GL_ARRAY_BUFFER, sizeof(float) * planet_model.data.size(), planet_model.data.data(), GL_STATIC_DRAW);
+
 
 
 }
