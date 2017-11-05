@@ -263,15 +263,15 @@ void ApplicationSolar::initializeShaderPrograms() {
 // generate stars
 void ApplicationSolar::initializeStars() {
 
-  for (int i = 0; i < 1000; ++i) {
+  for (int i = 0; i < 5000; ++i) {
     // position
-    float x = rand()%300;
-    float y = rand()%300;
-    float z = rand()%300;
+    float x = rand()%100-50;
+    float y = rand()%100-50;
+    float z = rand()%100-50;
     // color
-    float r = 1.f;
-    float g = 0.f;
-    float b = 0.f;
+    float r = rand()%100*0.01f;
+    float g = rand()%100*0.01f;
+    float b = rand()%100*0.01f;
     // push to vector
     all_stars.insert(std::end(all_stars),{x,y,z,r,g,b});
   }
@@ -297,7 +297,7 @@ void ApplicationSolar::initializeStars() {
   GL_FALSE, // normalize?
   6 * sizeof(float), // stride
   0); // offset
-  
+
   // activate second attribute on gpu
   glEnableVertexAttribArray(1);
   // second attribute is 3 floats with no offset & stride
