@@ -23,10 +23,6 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
  :Application{resource_path}
  ,planet_object{}
 {
-  initializeGeometry();
-  initializeStars();
-  initializeShaderPrograms();
-
   // planets
   // {size, speed_of_rotation, distance_to_origin, [moon?]}
   planet sonne{3.0f, 0.1f, 0.0f};
@@ -55,6 +51,10 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
   // vector with planet pointers
   all_planets.insert(std::end(all_planets),{p_sonne, p_merkur, p_venus,
     p_erde, p_mars, p_jupiter, p_saturn, p_uranus, p_neptun, p_pluto, p_mond});
+
+  initializeGeometry();
+  initializeStars();
+  initializeShaderPrograms();
 }
 
 // upload planets
@@ -92,7 +92,7 @@ void ApplicationSolar::upload_planet_transforms(std::shared_ptr<planet> planet) 
 
   // draw bound vertex array using bound shader
   glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
-};
+}
 
 void ApplicationSolar::render() const {
   
@@ -263,7 +263,7 @@ void ApplicationSolar::initializeShaderPrograms() {
 // generate stars
 void ApplicationSolar::initializeStars() {
 
-  for (int i = 0; i < 5000; ++i) {
+  for (int i = 0; i < 1000; ++i) {
     // position
     float x = rand()%100-50;
     float y = rand()%100-50;

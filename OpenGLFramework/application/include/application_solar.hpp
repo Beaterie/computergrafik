@@ -38,9 +38,10 @@ class ApplicationSolar : public Application {
   // cpu representation of model
   model_object planet_object;
   model_object star_object{};
-  // vector with planets
-  std::vector<std::shared_ptr<planet>> all_planets;
+  // vectors
+  std::vector<std::shared_ptr<planet>> all_planets{};
   std::vector<float> all_stars{};
+  std::vector<std::vector<float>> all_orbits{};
   
   float press_W = 0.0f;
   float press_S = 0.0f;
