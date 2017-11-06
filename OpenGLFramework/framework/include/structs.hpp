@@ -3,6 +3,7 @@
 
 #include <map>
 #include <glbinding/gl/gl.h>
+#include <vector>
 // use gl definitions from glbinding 
 using namespace gl;
 
@@ -89,4 +90,5 @@ struct planet {
   // intrinsic rotation speed
   float m_intr_rot_speed;
 };
+
 #endif
