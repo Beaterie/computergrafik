@@ -91,13 +91,4 @@ struct planet {
   float m_intr_rot_speed;
 };
 
-struct orbit {
-  orbit():
-  m_points{}
-  {}
-
-  // vectors
-  std::vector<float> m_points;
-};
-
 #endif

@@ -43,7 +43,7 @@ class ApplicationSolar : public Application {
   // vector with planets
   std::vector<std::shared_ptr<planet>> all_planets;
   std::vector<float> all_stars;
-  std::vector<std::shared_ptr<orbit>> all_orbits;
+  std::vector<float> all_orbits;
   
   float press_W = 0.0f;
   float press_S = 0.0f;
