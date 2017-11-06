@@ -110,14 +110,14 @@ void ApplicationSolar::render() const {
   // bind shader to upload uniforms
   glUseProgram(m_shaders.at("star").handle);
 
-  // bind shader to upload uniforms
-  glUseProgram(m_shaders.at("orbit").handle);
-
   // bind the VAO to draw
   glBindVertexArray(star_object.vertex_AO);
 
   // draw bound vertex array using bound shader
   glDrawArrays(star_object.draw_mode, 0, star_object.num_elements);
+
+  // bind shader to upload uniforms
+  glUseProgram(m_shaders.at("orbit").handle);
 
   // bind the VAO to draw
   glBindVertexArray(orbit_object.vertex_AO);
