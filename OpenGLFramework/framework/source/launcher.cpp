@@ -76,7 +76,7 @@ void Launcher::initialize() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
   #endif
   // create m_window, if unsuccessfull, quit
-  m_window = glfwCreateWindow(m_window_width, m_window_height, "OpenGL Framework", NULL, NULL);
+  m_window = glfwCreateWindow((int)m_window_width, (int)m_window_height, "OpenGL Framework", NULL, NULL);
   if (!m_window) {
     glfwTerminate();
     std::exit(EXIT_FAILURE);

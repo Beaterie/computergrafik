@@ -97,6 +97,32 @@ void ApplicationSolar::upload_planet_transforms(std::shared_ptr<planet> planet) 
   glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
 };
 
+void ApplicationSolar::upload_orbits(std::shared_ptr<planet> planet) const {
+
+  // shader it
+  glm::fmat4 moon_matrix{};
+  if (planet->m_moon) {
+    // if moon, set moon orbit with rotation
+    moon_matrix = glm::rotate(moon_matrix, float(glfwGetTime())*planet->m_rot_speed, glm::fvec3{0.0f, 1.0f, 0.0f});
+    moon_matrix = glm::translate(moon_matrix, glm::fvec3{0.0f, 0.0f, planet->m_origin_dis});
+    // shader it
+    glUniform1f(m_shaders.at("orbit").u_locs.at("OrbitDistance"), 0.5f);
+  }
+  else {
+    // shader it
+    glUniform1f(m_shaders.at("orbit").u_locs.at("OrbitDistance"), planet->m_origin_dis);
+  }
+  // shader it
+  glUniformMatrix4fv(m_shaders.at("orbit").u_locs.at("MoonMatrix"),
+                     1, GL_FALSE, glm::value_ptr(moon_matrix));
+
+  // bind the VAO to draw
+  glBindVertexArray(orbit_object.vertex_AO);
+
+  // draw bound vertex array using bound shader
+  glDrawArrays(orbit_object.draw_mode, 0, orbit_object.num_elements);
+}
+
 void ApplicationSolar::render() const {
   
   // bind shader to upload uniforms
@@ -119,11 +145,10 @@ void ApplicationSolar::render() const {
   // bind shader to upload uniforms
   glUseProgram(m_shaders.at("orbit").handle);
 
-  // bind the VAO to draw
-  glBindVertexArray(orbit_object.vertex_AO);
-
-  // draw bound vertex array using bound shader
-  glDrawArrays(orbit_object.draw_mode, 0, orbit_object.num_elements);
+  // load orbits
+  for (unsigned int i = 0; i < all_planets.size(); ++i) {
+    upload_orbits(all_planets[i]);
+  }
 }
 
 void ApplicationSolar::updateView() {
@@ -282,6 +307,8 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.at("planet").u_locs["ProjectionMatrix"] = -1;
   m_shaders.at("star").u_locs["ViewMatrix"] = -1;
   m_shaders.at("star").u_locs["ProjectionMatrix"] = -1;
+  m_shaders.at("orbit").u_locs["OrbitDistance"] = -1;
+  m_shaders.at("orbit").u_locs["MoonMatrix"] = -1;
   m_shaders.at("orbit").u_locs["ViewMatrix"] = -1;
   m_shaders.at("orbit").u_locs["ProjectionMatrix"] = -1;
 }
@@ -312,7 +339,7 @@ void ApplicationSolar::initializeStars() {
   // bind this as an vertex array buffer containing all attributes
   glBindBuffer(GL_ARRAY_BUFFER, star_object.vertex_BO);
   // configure currently bound array buffer
-  glBufferData(GL_ARRAY_BUFFER, sizeof(float) * all_stars.size(), all_stars.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, GLsizeiptr((sizeof(float) * all_stars.size())), all_stars.data(), GL_STATIC_DRAW);
 
   // activate first attribute on gpu
   glEnableVertexAttribArray(0);
@@ -335,7 +362,7 @@ void ApplicationSolar::initializeStars() {
   (void*) (3 * sizeof(float))); // offset
 
   star_object.draw_mode = GL_POINTS;
-  star_object.num_elements = all_stars.size() / 6.0f;
+  star_object.num_elements = GLsizei(all_stars.size() / 6);
 }
 
 // load models
@@ -352,7 +379,7 @@ void ApplicationSolar::initializeGeometry() {
   // bind this as an vertex array buffer containing all attributes
   glBindBuffer(GL_ARRAY_BUFFER, planet_object.vertex_BO);
   // configure currently bound array buffer
-  glBufferData(GL_ARRAY_BUFFER, sizeof(float) * planet_model.data.size(), planet_model.data.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, GLsizeiptr((sizeof(float) * planet_model.data.size())), planet_model.data.data(), GL_STATIC_DRAW);
 
   // activate first attribute on gpu
   glEnableVertexAttribArray(0);
@@ -368,7 +395,7 @@ void ApplicationSolar::initializeGeometry() {
   // bind this as an vertex array buffer containing all attributes
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, planet_object.element_BO);
   // configure currently bound array buffer
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, model::INDEX.size * planet_model.indices.size(), planet_model.indices.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr((unsigned long)model::INDEX.size * planet_model.indices.size()), planet_model.indices.data(), GL_STATIC_DRAW);
 
   // store type of primitive to draw
   planet_object.draw_mode = GL_TRIANGLES;
@@ -378,28 +405,19 @@ void ApplicationSolar::initializeGeometry() {
 
 // generate orbits
 void ApplicationSolar::initializeOrbits() {
-  const float PI = 3.1415926;
-  // grab planets' distances to origin
-  for (int i = 0; i < all_planets.size(); ++i) {
-    std::vector<float> orbit;
-    auto planet = all_planets[i];
-    // points on the orbit
-    for (int i = 0; i < 360; ++i) {
-      float dist = planet.get()->m_origin_dis;
-      // position
-      float x = dist*cos(i*2*PI/180);
-      float y = dist*sin(i*2*PI/180);
-      float z = 0;
-      // color (white)
-      //float r = 1;
-      //float g = 1;
-      //float b = 1;
-      orbit.insert(std::end(orbit), {x,z,y});
-    }
-    // save the vector of points to the orbit object
-    all_orbits.insert(std::end(all_orbits), std::begin(orbit), std::end(orbit));
+  // set default circle
+  for (int i = 0; i < 360; ++i) {
+    float x = 1*cos(i*2*3.1415926f/180);
+    float y = 1*sin(i*2*3.1415926f/180);
+    float z = 0;
+    // color (white)
+    //float r = 1;
+    //float g = 1;
+    //float b = 1;
+    all_orbits.insert(std::end(all_orbits), {x,y,z});
   }
-  std::cout << "number of orbits: " << all_orbits.size();
+  
+  std::cout << "number of floats: " << all_orbits.size() << std::endl;
 
   // generate vertex array object
   glGenVertexArrays(1, &orbit_object.vertex_AO);
@@ -411,7 +429,7 @@ void ApplicationSolar::initializeOrbits() {
   // bind this as an vertex array buffer containing all attributes
   glBindBuffer(GL_ARRAY_BUFFER, orbit_object.vertex_BO);
   // configure currently bound array buffer
-  glBufferData(GL_ARRAY_BUFFER, sizeof(float) * all_orbits.size(), all_orbits.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(sizeof(float) * all_orbits.size()), all_orbits.data(), GL_STATIC_DRAW);
 
   // activate first attribute on gpu
   glEnableVertexAttribArray(0);
@@ -420,7 +438,7 @@ void ApplicationSolar::initializeOrbits() {
   3, // number of components
   GL_FLOAT, // datatype
   GL_FALSE, // normalize?
-  6 * sizeof(float), // stride
+  3 * sizeof(float), // stride
   0); // offset
 
   // activate second attribute on gpu
@@ -434,7 +452,8 @@ void ApplicationSolar::initializeOrbits() {
   (void*) (3 * sizeof(float))); // offset*/
 
   orbit_object.draw_mode = GL_LINE_LOOP;
-  orbit_object.num_elements = all_orbits.size() / 3.0f;
+  orbit_object.num_elements = 360;
+  std::cout << "number of orbit_points: " << orbit_object.num_elements << std::endl;
 }
 
 ApplicationSolar::~ApplicationSolar() {
@@ -444,6 +463,9 @@ ApplicationSolar::~ApplicationSolar() {
 
   glDeleteBuffers(1, &star_object.vertex_BO);
   glDeleteVertexArrays(1, &star_object.vertex_AO);
+
+  glDeleteBuffers(1, &orbit_object.vertex_BO);
+  glDeleteVertexArrays(1, &orbit_object.vertex_AO);
 }
 
 // exe entry point

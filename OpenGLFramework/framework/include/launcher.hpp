@@ -7,7 +7,8 @@
 
 // forward declarations
 class Application;
-class GLFWwindow;
+// before "class" instead of "struct" ~Josef
+struct GLFWwindow;
 
 class Launcher {
  public:
