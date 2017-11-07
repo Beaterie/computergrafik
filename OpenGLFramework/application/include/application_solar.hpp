@@ -42,7 +42,7 @@ class ApplicationSolar : public Application {
   model_object planet_object{};
   model_object star_object{};
   model_object orbit_object{};
-  // vector with planets
+  // vectors with content
   std::vector<std::shared_ptr<planet>> all_planets;
   std::vector<float> all_stars;
   std::vector<float> all_orbits;

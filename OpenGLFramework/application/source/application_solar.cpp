@@ -30,16 +30,16 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
   // planets
   // {size, speed_of_rotation, distance_to_origin, [moon?]}
   planet sonne{3.0f, 0.1f, 0.0f};
-  planet merkur{log(4.9f)*0.1f, 87.0f*0.0003f, log(5.8f)*2.5f};
-  planet venus{log(12.0f)*0.1f, 200.0f*0.0003f, log(10.8f)*2.5f};
-  planet erde{log(13.0f)*0.1f, 365.0f*0.0003f, log(15.0f)*2.5f};
-  planet mars{log(6.8f)*0.1f, 600.0f*0.0003f, log(22.8f)*2.5f};
-  planet jupiter{log(142.0f)*0.1f, 450.0f*0.0003f, log(77.8f)*2.5f};
-  planet saturn{log(120.0f)*0.1f, 350.0f*0.0003f, log(143.0f)*2.5f};
-  planet uranus{log(51.0f)*0.1f, 400.0f*0.0003f, log(288.0f)*2.5f};
-  planet neptun{log(48.0f)*0.1f, 40.0f*0.0003f, log(450.0f)*2.5f};
-  planet pluto{log(2.3f)*0.1f, 160.0f*0.0003f, log(460.0f)*2.8f};
-  planet mond{log(3.4f)*0.1f, 365.0f*0.0003f, log(15.0f)*2.5f, true};
+  planet merkur{log(4.9f)*0.1f, 87.0f*0.00005f, log(5.8f)*2.5f};
+  planet venus{log(12.0f)*0.1f, 200.0f*0.00005f, log(10.8f)*-2.5f};
+  planet erde{log(13.0f)*0.1f, 365.0f*0.00005f, log(15.0f)*2.5f};
+  planet mars{log(6.8f)*0.1f, 700.0f*0.00005f, log(22.8f)*-2.5f};
+  planet jupiter{log(142.0f)*0.1f, 450.0f*0.00005f, log(77.8f)*2.5f};
+  planet saturn{log(120.0f)*0.1f, 50.0f*0.00005f, log(143.0f)*-2.5f};
+  planet uranus{log(51.0f)*0.1f, 140.0f*0.00005f, log(358.0f)*2.5f};
+  planet neptun{log(48.0f)*0.1f, 300.0f*0.00005f, log(800.0f)*-2.5f};
+  planet pluto{log(2.3f)*0.1f, 160.0f*0.00005f, log(2000.0f)*2.5f};
+  planet mond{log(3.4f)*0.1f, 365.0f*0.00005f, log(15.0f)*2.5f, true};
   // planet pointer
   auto p_sonne    = std::make_shared<planet>(sonne);
   auto p_merkur   = std::make_shared<planet>(merkur);
@@ -73,7 +73,7 @@ void ApplicationSolar::upload_planet_transforms(std::shared_ptr<planet> planet) 
   // if moon, rotate around earth
   if (planet->m_moon == true) {
     // moon rotation
-    model_matrix = glm::rotate(model_matrix, float(glfwGetTime())*2.7f, glm::fvec3{0.0f, 1.0f, 0.0f});
+    model_matrix = glm::rotate(model_matrix, float(glfwGetTime()), glm::fvec3{0.0f, 1.0f, 0.0f});
     // moon distance (distance to earth)
     model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, 0.5f});
   }
@@ -316,6 +316,7 @@ void ApplicationSolar::initializeShaderPrograms() {
 // generate stars
 void ApplicationSolar::initializeStars() {
 
+  // generate 5000 random stars
   for (int i = 0; i < 5000; ++i) {
     // position
     float x = rand()%100-50;
@@ -405,6 +406,7 @@ void ApplicationSolar::initializeGeometry() {
 
 // generate orbits
 void ApplicationSolar::initializeOrbits() {
+
   // set default circle
   for (int i = 0; i < 360; ++i) {
     float x = 1*cos(i*2*3.1415926f/180);
