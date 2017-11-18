@@ -23,23 +23,23 @@ using namespace gl;
 ApplicationSolar::ApplicationSolar(std::string const& resource_path)
  :Application{resource_path}
  ,planet_object{}
-{
+ {
   initializeGeometry();
   initializeStars();
 
   // planets
   // {size, speed_of_rotation, distance_to_origin, [moon?]}
-  planet sonne{3.0f, 0.1f, 0.0f};
-  planet merkur{log(4.9f)*0.1f, 87.0f*0.00005f, log(5.8f)*2.5f};
-  planet venus{log(12.0f)*0.1f, 200.0f*0.00005f, log(10.8f)*-2.5f};
-  planet erde{log(13.0f)*0.1f, 365.0f*0.00005f, log(15.0f)*2.5f};
-  planet mars{log(6.8f)*0.1f, 700.0f*0.00005f, log(22.8f)*-2.5f};
-  planet jupiter{log(142.0f)*0.1f, 450.0f*0.00005f, log(77.8f)*2.5f};
-  planet saturn{log(120.0f)*0.1f, 50.0f*0.00005f, log(143.0f)*-2.5f};
-  planet uranus{log(51.0f)*0.1f, 140.0f*0.00005f, log(358.0f)*2.5f};
-  planet neptun{log(48.0f)*0.1f, 300.0f*0.00005f, log(800.0f)*-2.5f};
-  planet pluto{log(2.3f)*0.1f, 160.0f*0.00005f, log(2000.0f)*2.5f};
-  planet mond{log(3.4f)*0.1f, 365.0f*0.00005f, log(15.0f)*2.5f, true};
+  planet sonne{3.0f, 0.1f, 0.0f, {1.0f,0.8f,0.0f}};
+  planet merkur{log(4.9f)*0.1f, 87.0f*0.00005f, log(5.8f)*2.5f, {0.4f,0.2f,1.0f}};
+  planet venus{log(12.0f)*0.1f, 200.0f*0.00005f, log(10.8f)*-2.5f, {0.9f,0.2f,1.0f}};
+  planet erde{log(13.0f)*0.1f, 365.0f*0.00005f, log(15.0f)*2.5f, {0.05f,0.1f,1.0f}};
+  planet mars{log(6.8f)*0.1f, 700.0f*0.00005f, log(22.8f)*-2.5f, {0.8f,0.1f,0.0f}};
+  planet jupiter{log(142.0f)*0.1f, 450.0f*0.00005f, log(77.8f)*2.5f, {0.8f,0.0f,0.0f}};
+  planet saturn{log(120.0f)*0.1f, 50.0f*0.00005f, log(143.0f)*-2.5f, {0.5f,1.0f,0.0f}};
+  planet uranus{log(51.0f)*0.1f, 140.0f*0.00005f, log(358.0f)*2.5f, {0.0f,0.3f,0.3f}};
+  planet neptun{log(48.0f)*0.1f, 300.0f*0.00005f, log(800.0f)*-2.5f, {0.0f,0.1f,0.8f}};
+  planet pluto{log(2.3f)*0.1f, 160.0f*0.00005f, log(2000.0f)*2.5f, {1.0f,1.0f,0.0f}};
+  planet mond{log(3.4f)*0.1f, 365.0f*0.00005f, log(15.0f)*2.5f, true, {0.5f,0.5f,0.5f}};
   // planet pointer
   auto p_sonne    = std::make_shared<planet>(sonne);
   auto p_merkur   = std::make_shared<planet>(merkur);
@@ -80,6 +80,10 @@ void ApplicationSolar::upload_planet_transforms(std::shared_ptr<planet> planet) 
 
   // scale the planet
   model_matrix = glm::scale(model_matrix, glm::fvec3{planet->m_size,planet->m_size,planet->m_size});
+
+  // color
+  glUniform3fv(m_shaders.at("planet").u_locs.at("PlanetColor"), 1,
+    glm::value_ptr(planet->m_color));
 
   // shader it
   glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ModelMatrix"),
@@ -154,11 +158,15 @@ void ApplicationSolar::render() const {
 void ApplicationSolar::updateView() {
   // vertices are transformed in camera space, so camera transform must be inverted
   glm::fmat4 view_matrix = glm::inverse(m_view_transform);
+
   std::cout << "updating..\n";
   // upload matrix to gpu
   glUseProgram(m_shaders.at("planet").handle);
   glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ViewMatrix"),
                       1, GL_FALSE, glm::value_ptr(view_matrix));
+  // sun position
+  glUniform3fv(m_shaders.at("planet").u_locs.at("SunPosition"), 1,
+    glm::value_ptr(glm::fvec3{view_matrix * glm::fvec4{0.0f,0.0f,0.0f,1.0f}}));
 
   // upload matrix to gpu
   glUseProgram(m_shaders.at("star").handle);
@@ -305,6 +313,8 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.at("planet").u_locs["ModelMatrix"] = -1;
   m_shaders.at("planet").u_locs["ViewMatrix"] = -1;
   m_shaders.at("planet").u_locs["ProjectionMatrix"] = -1;
+  m_shaders.at("planet").u_locs["SunPosition"] = -1;
+  m_shaders.at("planet").u_locs["PlanetColor"] = -1;
   m_shaders.at("star").u_locs["ViewMatrix"] = -1;
   m_shaders.at("star").u_locs["ProjectionMatrix"] = -1;
   m_shaders.at("orbit").u_locs["OrbitDistance"] = -1;

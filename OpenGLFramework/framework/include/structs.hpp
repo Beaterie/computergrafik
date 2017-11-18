@@ -4,6 +4,7 @@
 #include <map>
 #include <glbinding/gl/gl.h>
 #include <vector>
+#include <glm/gtc/type_ptr.hpp>
 // use gl definitions from glbinding 
 using namespace gl;
 
@@ -52,31 +53,35 @@ struct planet {
   m_rot_speed{1.0f},
   m_origin_dis{1.0f},
   m_moon{false},
-  m_intr_rot_speed{1.0f}
+  m_intr_rot_speed{1.0f},
+  m_color{0.0f,1.0f,0.0f}
   {}
 
-  planet(float size, float speed, float distance):
+  planet(float size, float speed, float distance, glm::fvec3 color):
   m_size{size},
   m_rot_speed{speed},
   m_origin_dis{distance},
   m_moon{false},
-  m_intr_rot_speed{1.0f}
+  m_intr_rot_speed{1.0f},
+  m_color{color}
   {}
 
-  planet(float size, float speed, float distance, bool moon):
+  planet(float size, float speed, float distance, bool moon, glm::fvec3 color):
   m_size{size},
   m_rot_speed{speed},
   m_origin_dis{distance},
   m_moon{moon},
-  m_intr_rot_speed{1.0f}
+  m_intr_rot_speed{1.0f},
+  m_color{color}
   {}
 
-  planet(float size, float speed, float distance, bool moon, float selfrot):
+  planet(float size, float speed, float distance, bool moon, float selfrot, glm::fvec3 color):
   m_size{size},
   m_rot_speed{speed},
   m_origin_dis{distance},
   m_moon{moon},
-  m_intr_rot_speed{selfrot}
+  m_intr_rot_speed{selfrot},
+  m_color{color}
   {}
 
   // size
@@ -89,6 +94,8 @@ struct planet {
   bool m_moon;
   // intrinsic rotation speed
   float m_intr_rot_speed;
+  // planet color
+  glm::fvec3 m_color;
 };
 
 #endif
