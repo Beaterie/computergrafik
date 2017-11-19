@@ -16,6 +16,6 @@ out vec3 pass_Position;
 void main(void)
 {
 	gl_Position = (ProjectionMatrix  * ViewMatrix * ModelMatrix) * vec4(in_Position, 1.0);
-	pass_Position = in_Position;
+	pass_Position = vec4(in_Position, 1.0).xyz;
 	pass_Normal = (NormalMatrix * vec4(in_Normal, 0.0)).xyz;
 }
