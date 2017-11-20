@@ -27,7 +27,7 @@ class ApplicationSolar : public Application {
   void render() const;
 
   // upload planets
-  void upload_planet_transforms(std::shared_ptr<planet> planet) const;
+  void upload_planet_transforms(std::shared_ptr<planet> planet, std::string shadermode) const;
   // upload sun
   void upload_sun(std::shared_ptr<planet> sun) const;
   // upload orbits
@@ -44,17 +44,22 @@ class ApplicationSolar : public Application {
   model_object planet_object{};
   model_object star_object{};
   model_object orbit_object{};
+
   // vectors with content
   std::vector<std::shared_ptr<planet>> all_planets;
   std::vector<float> all_stars;
   std::vector<float> all_orbits;
   
+  // navigator keys
   float press_W = 0.0f;
   float press_S = 0.0f;
   float press_A = 0.0f;
   float press_D = 0.0f;
   float press_E = 0.0f;
   float press_SPACE = 0.0f;
+
+  // cel-shading key
+  bool celshading = false;
 };
 
 #endif
