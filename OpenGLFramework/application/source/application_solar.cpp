@@ -22,14 +22,16 @@ using namespace gl;
 
 ApplicationSolar::ApplicationSolar(std::string const& resource_path)
  :Application{resource_path}
- ,planet_object{}
  {
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glDisable(GL_CULL_FACE);
   initializeGeometry();
   initializeStars();
 
   // planets
   // {size, speed_of_rotation, distance_to_origin, [moon, instrinct rotation,] color}
-  planet sonne{1.5f, 0.0f, 0.0f, {1.0f,0.8f,0.0f}};
+  planet sonne{3.0f, 0.0f, 0.0f, false, 0.3f, {1.0f,0.75f,0.0f}};
   planet merkur{log(4.9f)*0.1f, 87.0f*0.00005f, log(5.8f)*2.5f, {0.4f,0.2f,1.0f}};
   planet venus{log(12.0f)*0.1f, 200.0f*0.00005f, log(10.8f)*2.5f, {0.9f,0.2f,1.0f}};
   planet erde{log(13.0f)*0.1f, 365.0f*0.00005f, log(15.0f)*2.5f, {0.05f,0.1f,1.0f}};
@@ -99,7 +101,35 @@ void ApplicationSolar::upload_planet_transforms(std::shared_ptr<planet> planet) 
 
   // draw bound vertex array using bound shader
   glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
-};
+}
+
+void ApplicationSolar::upload_sun(std::shared_ptr<planet> sun) const {
+
+  // intrinsic rotation
+  glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime())*sun->m_intr_rot_speed, glm::fvec3{0.0f, 1.0f, 0.0f});
+
+  // scale sun
+  model_matrix = glm::scale(model_matrix, glm::fvec3{sun->m_size,sun->m_size,sun->m_size});
+
+  // color sun
+  // glUniform3fv(m_shaders.at("sun").u_locs.at("SunColor"), 1,
+  //   glm::value_ptr(sun->m_color));
+
+  // shader it
+  glUniformMatrix4fv(m_shaders.at("sun").u_locs.at("ModelMatrix"),
+                     1, GL_FALSE, glm::value_ptr(model_matrix));
+
+  // extra matrix for normal transformation to keep them orthogonal to surface
+  glm::fmat4 normal_matrix = glm::inverseTranspose(glm::inverse(m_view_transform) * model_matrix);
+  glUniformMatrix4fv(m_shaders.at("sun").u_locs.at("NormalMatrix"),
+                     1, GL_FALSE, glm::value_ptr(normal_matrix));
+
+  // bind the VAO to draw
+  glBindVertexArray(planet_object.vertex_AO);
+
+  // draw bound vertex array using bound shader
+  glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
+}
 
 void ApplicationSolar::upload_orbits(std::shared_ptr<planet> planet) const {
 
@@ -131,11 +161,25 @@ void ApplicationSolar::render() const {
   
   // bind shader to upload uniforms
   glUseProgram(m_shaders.at("planet").handle);
-  
+
+  // sun position
+  glUniform3fv(m_shaders.at("planet").u_locs.at("SunPosition"), 1,
+    glm::value_ptr(glm::fvec3{0.0f,0.0f,0.0f}));
+
   // load planets
-  for (unsigned int i = 0; i < all_planets.size(); ++i) {
+  for (unsigned int i = 1; i < all_planets.size(); ++i) {
     upload_planet_transforms(all_planets[i]);
   }
+
+  // bind shader to upload uniforms
+  glUseProgram(m_shaders.at("sun").handle);
+
+  // sun position
+  glUniform3fv(m_shaders.at("sun").u_locs.at("SunPosition"), 1,
+    glm::value_ptr(glm::fvec3{0.0f,0.0f,0.0f}));
+
+  // load sun
+  upload_sun(all_planets[0]);
 
   // bind shader to upload uniforms
   glUseProgram(m_shaders.at("star").handle);
@@ -166,10 +210,6 @@ void ApplicationSolar::updateView() {
   glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ViewMatrix"),
                       1, GL_FALSE, glm::value_ptr(view_matrix));
 
-  // sun position
-  glUniform3fv(m_shaders.at("planet").u_locs.at("SunPosition"), 1,
-    glm::value_ptr(glm::fvec3{view_matrix * glm::fvec4{0.0f,0.0f,0.0f,1.0f}}));
-
   // upload matrix to gpu
   glUseProgram(m_shaders.at("star").handle);
   glUniformMatrix4fv(m_shaders.at("star").u_locs.at("ViewMatrix"),
@@ -178,6 +218,11 @@ void ApplicationSolar::updateView() {
   // upload matrix to gpu
   glUseProgram(m_shaders.at("orbit").handle);
   glUniformMatrix4fv(m_shaders.at("orbit").u_locs.at("ViewMatrix"),
+                      1, GL_FALSE, glm::value_ptr(view_matrix));
+
+  // upload matrix to gpu
+  glUseProgram(m_shaders.at("sun").handle);
+  glUniformMatrix4fv(m_shaders.at("sun").u_locs.at("ViewMatrix"),
                       1, GL_FALSE, glm::value_ptr(view_matrix));
 }
 
@@ -195,6 +240,11 @@ void ApplicationSolar::updateProjection() {
   // upload matrix to gpu
   glUseProgram(m_shaders.at("orbit").handle);
   glUniformMatrix4fv(m_shaders.at("orbit").u_locs.at("ProjectionMatrix"),
+                     1, GL_FALSE, glm::value_ptr(m_view_projection));
+
+  // upload matrix to gpu
+  glUseProgram(m_shaders.at("sun").handle);
+  glUniformMatrix4fv(m_shaders.at("sun").u_locs.at("ProjectionMatrix"),
                      1, GL_FALSE, glm::value_ptr(m_view_projection));
 }
 
@@ -304,12 +354,14 @@ void ApplicationSolar::mouseCallback(double pos_x, double pos_y) {
 // load shader programs
 void ApplicationSolar::initializeShaderPrograms() {
   // store shader program objects in container
-  m_shaders.emplace("planet", shader_program{m_resource_path + "shaders/simple.vert",
-                                           m_resource_path + "shaders/simple.frag"});
+  m_shaders.emplace("planet", shader_program{m_resource_path + "shaders/planet.vert",
+                                           m_resource_path + "shaders/planet.frag"});
   m_shaders.emplace("star", shader_program{m_resource_path + "shaders/starlight.vert",
                                            m_resource_path + "shaders/starlight.frag"});
   m_shaders.emplace("orbit", shader_program{m_resource_path + "shaders/orbit.vert",
                                            m_resource_path + "shaders/orbit.frag"});
+  m_shaders.emplace("sun", shader_program{m_resource_path + "shaders/sun.vert",
+                                           m_resource_path + "shaders/sun.frag"});
   // request uniform locations for shader program
   m_shaders.at("planet").u_locs["NormalMatrix"] = -1;
   m_shaders.at("planet").u_locs["ModelMatrix"] = -1;
@@ -323,6 +375,12 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.at("orbit").u_locs["MoonMatrix"] = -1;
   m_shaders.at("orbit").u_locs["ViewMatrix"] = -1;
   m_shaders.at("orbit").u_locs["ProjectionMatrix"] = -1;
+  m_shaders.at("sun").u_locs["NormalMatrix"] = -1;
+  m_shaders.at("sun").u_locs["ModelMatrix"] = -1;
+  m_shaders.at("sun").u_locs["ViewMatrix"] = -1;
+  m_shaders.at("sun").u_locs["ProjectionMatrix"] = -1;
+  m_shaders.at("sun").u_locs["SunPosition"] = -1;
+  // m_shaders.at("sun").u_locs["SunColor"] = -1;
 }
 
 // generate stars

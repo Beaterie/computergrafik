@@ -28,6 +28,8 @@ class ApplicationSolar : public Application {
 
   // upload planets
   void upload_planet_transforms(std::shared_ptr<planet> planet) const;
+  // upload sun
+  void upload_sun(std::shared_ptr<planet> sun) const;
   // upload orbits
   void upload_orbits(std::shared_ptr<planet> planet) const;
 

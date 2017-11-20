@@ -53,7 +53,7 @@ struct planet {
   m_rot_speed{1.0f},
   m_origin_dis{1.0f},
   m_moon{false},
-  m_intr_rot_speed{0.0f},
+  m_intr_rot_speed{0.5f},
   m_color{0.0f,1.0f,0.0f}
   {}
 
@@ -62,7 +62,7 @@ struct planet {
   m_rot_speed{speed},
   m_origin_dis{distance},
   m_moon{false},
-  m_intr_rot_speed{0.0f},
+  m_intr_rot_speed{0.5f},
   m_color{color}
   {}
 
@@ -71,7 +71,7 @@ struct planet {
   m_rot_speed{speed},
   m_origin_dis{distance},
   m_moon{moon},
-  m_intr_rot_speed{0.0f},
+  m_intr_rot_speed{0.5f},
   m_color{color}
   {}
 
