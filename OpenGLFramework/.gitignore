@@ -1,0 +1,7 @@
+build
+install
+*.o
+*.sublime-workspace
+*~
+.DS_Store 
+.vs
