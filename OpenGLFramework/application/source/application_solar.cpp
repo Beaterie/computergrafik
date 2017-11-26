@@ -4,6 +4,8 @@
 #include "utils.hpp"
 #include "shader_loader.hpp"
 #include "model_loader.hpp"
+#include "texture_loader.hpp"
+#include "pixel_data.hpp"
 
 #include <glbinding/gl/gl.h>
 // use gl definitions from glbinding 
