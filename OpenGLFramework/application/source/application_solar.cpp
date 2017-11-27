@@ -119,6 +119,30 @@ void ApplicationSolar::upload_sun(std::shared_ptr<planet> sun) const {
   // glUniform3fv(m_shaders.at("sun").u_locs.at("SunColor"), 1,
   //   glm::value_ptr(sun->m_color));
 
+  // texture sun
+  texture_object texSun;
+  pixel_data pixData = texture_loader::file("resources/textures/summap.png");
+  // activate Texture Unit to which to bind texture 
+  glActiveTexture(GL_TEXTURE1);
+  // generate Texture Object
+  glGenTextures(1, &texSun.handle);
+  // bind Texture Object to 2d texture binding point of unit
+  glBindTexture(GL_TEXTURE_2D, texSun.handle);
+  // define mandatory sampling parameters
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  // format Texture Object bound to the 2d binding point
+  glTexImage2D(GL_TEXTURE_2D,
+               0,
+               GL_RGB8,
+               pixData.width,
+               pixData.height,
+               0,
+               GL_RGB,
+               pixData.channel_type,
+			   &pixData.pixels
+               );
+
   // shader it
   glUniformMatrix4fv(m_shaders.at("sun").u_locs.at("ModelMatrix"),
                      1, GL_FALSE, glm::value_ptr(model_matrix));
