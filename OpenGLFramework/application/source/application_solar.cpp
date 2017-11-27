@@ -123,7 +123,7 @@ void ApplicationSolar::upload_sun(std::shared_ptr<planet> sun) const {
   texture_object texSun;
   pixel_data pixData = texture_loader::file("resources/textures/summap.png");
   // activate Texture Unit to which to bind texture 
-  glActiveTexture(GL_TEXTURE1);
+  glActiveTexture(GL_TEXTURE0);
   // generate Texture Object
   glGenTextures(1, &texSun.handle);
   // bind Texture Object to 2d texture binding point of unit
@@ -131,7 +131,7 @@ void ApplicationSolar::upload_sun(std::shared_ptr<planet> sun) const {
   // define mandatory sampling parameters
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  // format Texture Object bound to the 2d binding point
+  // pixel transfer
   glTexImage2D(GL_TEXTURE_2D,
                0,
                GL_RGB8,
@@ -142,11 +142,14 @@ void ApplicationSolar::upload_sun(std::shared_ptr<planet> sun) const {
                pixData.channel_type,
 			   &pixData.pixels
                );
-
+  
   // shader it
   glUniformMatrix4fv(m_shaders.at("sun").u_locs.at("ModelMatrix"),
                      1, GL_FALSE, glm::value_ptr(model_matrix));
-
+  
+  // get location of sampler uniform
+  int color_sampler_location = glGetUniformLocation(m_shaders.at("sun").handle, "TextureSun");
+  glUniform1i(color_sampler_location, 0);
   // extra matrix for normal transformation to keep them orthogonal to surface
   //glm::fmat4 normal_matrix = glm::inverseTranspose(glm::inverse(m_view_transform) * model_matrix);
   //glUniformMatrix4fv(m_shaders.at("sun").u_locs.at("NormalMatrix"),
