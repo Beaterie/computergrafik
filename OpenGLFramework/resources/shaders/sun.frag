@@ -50,5 +50,6 @@ void main() {
   // export color
   out_Color = vec4(colorLinear,t);
 
-  vec4 color = textureSuntextureSun(TextureSun, vec2(gl_TexCoord[0]));
+  //vec4 color = textureSuntextureSun(TextureSun, gl_TexCoord[0].xy);
+  vec4 color = texture(TextureSun, vec2(0.0));
 }
