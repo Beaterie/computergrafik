@@ -8,7 +8,7 @@ uniform mat4 ModelMatrix;
 uniform vec3 SunPosition;
 uniform mat4 ViewMatrix;
 
-uniform sampler2D TextureSun;
+uniform sampler2D Texture;
 
 out vec4 out_Color;
 
@@ -50,5 +50,5 @@ void main() {
 
   // export color
   //out_Color = vec4(colorLinear,t);
-  out_Color = texture(TextureSun, pass_TexCoord);
+  out_Color = texture(Texture, pass_TexCoord);
 }

@@ -25,8 +25,8 @@ using namespace gl;
 
 
 ApplicationSolar::ApplicationSolar(std::string const& resource_path)
- :Application{resource_path}
- {
+ :Application{resource_path} {
+
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -34,6 +34,7 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
   //glDisable(GL_CULL_FACE);
 
   initializeShaderPrograms();
+  //initializeTextures();
   initializeGeometry();
   initializeStars();
   //glEnable(GL_TEXTURE_2D);
@@ -68,13 +69,20 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
   all_planets.insert(std::end(all_planets),{p_sonne, p_merkur, p_venus,
     p_erde, p_mars, p_jupiter, p_saturn, p_uranus, p_neptun, p_pluto, p_mond});
 
+  // initialize textures and bind to texture objects
+  for (unsigned int i = 0; i < (sizeof(all_textures)/sizeof(*all_textures)-1); ++i) {
+    initializeTextures(i, 0);
+  }
+  // earth at night texture
+  initializeTextures(11, 1);
+
   initializeOrbits();
 
   std::cout << "Realistic shader activated.\n";
 }
 
 // upload planets
-void ApplicationSolar::upload_planet_transforms(std::shared_ptr<planet> planet, std::string shadermode) const {
+void ApplicationSolar::upload_planet_transforms(std::shared_ptr<planet> planet, std::string shadermode, texture_object obj) const {
 
   // main rotation
   glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime())*planet->m_rot_speed, glm::fvec3{0.0f, 1.0f, 0.0f});
@@ -102,6 +110,16 @@ void ApplicationSolar::upload_planet_transforms(std::shared_ptr<planet> planet, 
   glUniformMatrix4fv(m_shaders.at(shadermode).u_locs.at("ModelMatrix"),
                      1, GL_FALSE, glm::value_ptr(model_matrix));
 
+  // realistic shader with texture
+  if (shadermode == "planet") {
+    //std::cout << "TexNumber: " << texNumber << std::endl;
+    // activate shader
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, obj.handle);
+    // get location of sampler uniform
+    glUniform1i(glGetUniformLocation(m_shaders.at(shadermode).handle, "Texture"), GLint(0));
+  }
+
   // extra matrix for normal transformation to keep them orthogonal to surface
   //glm::fmat4 normal_matrix = glm::inverseTranspose(glm::inverse(m_view_transform) * model_matrix);
   //glUniformMatrix4fv(m_shaders.at(shadermode).u_locs.at("NormalMatrix"),
@@ -114,7 +132,7 @@ void ApplicationSolar::upload_planet_transforms(std::shared_ptr<planet> planet, 
   glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
 }
 
-void ApplicationSolar::upload_sun(std::shared_ptr<planet> sun) const {
+void ApplicationSolar::upload_sun(std::shared_ptr<planet> sun, texture_object obj) const {
 
   // intrinsic rotation
   glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime())*sun->m_intr_rot_speed, glm::fvec3{0.0f, 1.0f, 0.0f});
@@ -132,9 +150,9 @@ void ApplicationSolar::upload_sun(std::shared_ptr<planet> sun) const {
 
   //glUseProgram(m_shaders.at("sun").handle);
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, texSun.handle);
+  glBindTexture(GL_TEXTURE_2D, obj.handle);
   // get location of sampler uniform
-  glUniform1i(glGetUniformLocation(m_shaders.at("sun").handle, "TextureSun"), GLint(0));
+  glUniform1i(glGetUniformLocation(m_shaders.at("sun").handle, "Texture"), GLint(0));
 
   // extra matrix for normal transformation to keep them orthogonal to surface
   //glm::fmat4 normal_matrix = glm::inverseTranspose(glm::inverse(m_view_transform) * model_matrix);
@@ -196,9 +214,15 @@ void ApplicationSolar::render() const {
     shadermode = "planet";
   }
 
+  // activate shader
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D, all_texture_objects[11].handle);
+  // get location of sampler uniform
+  glUniform1i(glGetUniformLocation(m_shaders.at(shadermode).handle, "TextureNight"), GLint(1));
+
   // load planets
   for (unsigned int i = 1; i < all_planets.size(); ++i) {
-    upload_planet_transforms(all_planets[i],shadermode);
+    upload_planet_transforms(all_planets[i], shadermode, all_texture_objects[i]);
   }
 
   // bind shader to upload uniforms
@@ -207,7 +231,7 @@ void ApplicationSolar::render() const {
   glUniform3fv(m_shaders.at("sun").u_locs.at("SunPosition"), 1,
     glm::value_ptr(glm::fvec3{0.0f,0.0f,0.0f}));
   // load sun
-  upload_sun(all_planets[0]);
+  upload_sun(all_planets[0], all_texture_objects[0]);
 
   // bind shader to upload uniforms
   glUseProgram(m_shaders.at("star").handle);
@@ -424,6 +448,8 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.at("planet").u_locs["ProjectionMatrix"] = -1;
   m_shaders.at("planet").u_locs["SunPosition"] = -1;
   m_shaders.at("planet").u_locs["PlanetColor"] = -1;
+  m_shaders.at("planet").u_locs["Texture"] = -1;
+  m_shaders.at("planet").u_locs["TextureNight"] = -1;
 
   m_shaders.at("star").u_locs["ViewMatrix"] = -1;
   m_shaders.at("star").u_locs["ProjectionMatrix"] = -1;
@@ -438,7 +464,7 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.at("sun").u_locs["ViewMatrix"] = -1;
   m_shaders.at("sun").u_locs["ProjectionMatrix"] = -1;
   m_shaders.at("sun").u_locs["SunPosition"] = -1;
-  m_shaders.at("sun").u_locs["TextureSun"] = -1;
+  m_shaders.at("sun").u_locs["Texture"] = -1;
   // m_shaders.at("sun").u_locs["SunColor"] = -1;
 
   //m_shaders.at("cel").u_locs["NormalMatrix"] = -1;
@@ -544,18 +570,18 @@ void ApplicationSolar::initializeGeometry() {
   planet_object.draw_mode = GL_TRIANGLES;
   // transfer number of indices to model object 
   planet_object.num_elements = GLsizei(planet_model.indices.size());
+}
 
-
-
+void ApplicationSolar::initializeTextures(unsigned int num, unsigned int unit_num) {
   // texture sun
-  pixel_data pixData = texture_loader::file(m_resource_path + "textures/2k_sun.png");
+  pixel_data pixData = texture_loader::file(m_resource_path + "textures/" + all_textures[num]);
 
   // activate Texture Unit to which to bind texture 
-  glActiveTexture(GL_TEXTURE0);
+  glActiveTexture(GL_TEXTURE0 + unit_num);
   // generate Texture Object
-  glGenTextures(1, &texSun.handle);
+  glGenTextures(1, &all_texture_objects[num].handle);
   // bind Texture Object to 2d texture binding point of unit
-  glBindTexture(GL_TEXTURE_2D, texSun.handle);
+  glBindTexture(GL_TEXTURE_2D, all_texture_objects[num].handle);
 
   // define mandatory sampling parameters
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -570,12 +596,9 @@ void ApplicationSolar::initializeGeometry() {
                GLsizei(pixData.height),
                0,
                pixData.channels,
-               //pixData.channel_type,
                pixData.channel_type,
                pixData.ptr()
-               //&pixData.pixels
                );
-
 }
 
 // generate orbits
