@@ -2,6 +2,7 @@
 
 in  vec3 pass_Normal;
 in  vec3 pass_Position;
+in  vec2 pass_TexCoord;
 
 uniform mat4 ModelMatrix;
 uniform vec3 SunPosition;
@@ -48,8 +49,6 @@ void main() {
                      specular * specColor);
 
   // export color
-  out_Color = vec4(colorLinear,t);
-
-  //vec4 color = textureSuntextureSun(TextureSun, gl_TexCoord[0].xy);
-  vec4 color = texture(TextureSun, vec2(0.0));
+  //out_Color = vec4(colorLinear,t);
+  out_Color = texture(TextureSun, pass_TexCoord);
 }

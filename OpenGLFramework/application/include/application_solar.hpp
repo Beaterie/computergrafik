@@ -44,6 +44,7 @@ class ApplicationSolar : public Application {
   model_object planet_object{};
   model_object star_object{};
   model_object orbit_object{};
+  texture_object texSun;
 
   // vectors with content
   std::vector<std::shared_ptr<planet>> all_planets;

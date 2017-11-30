@@ -22,12 +22,18 @@ using namespace gl;
 #include <iostream>
 #include <math.h>
 
+
+
 ApplicationSolar::ApplicationSolar(std::string const& resource_path)
  :Application{resource_path}
  {
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glDisable(GL_CULL_FACE);
+
+  // enable transparency
+  //glDisable(GL_CULL_FACE);
+
+  initializeShaderPrograms();
   initializeGeometry();
   initializeStars();
   //glEnable(GL_TEXTURE_2D);
@@ -35,7 +41,7 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
 
   // planets
   // {size, speed_of_rotation, distance_to_origin, [moon, instrinct rotation,] color}
-  planet sonne{3.0f, 0.0f, 0.0f, false, 0.3f, {1.0f,0.75f,0.0f}};
+  planet sonne{3.0f, 0.0f, 0.0f, false, 0.1f, {1.0f,0.75f,0.0f}};
   planet merkur{log(4.9f)*0.1f, 87.0f*0.00005f, log(5.8f)*-2.5f, {0.5f,0.5f,0.5f}};
   planet venus{log(12.0f)*0.1f, 200.0f*0.00005f, log(10.8f)*2.5f, {1.0f,0.9f,0.3f}};
   planet erde{log(13.0f)*0.1f, 365.0f*0.00005f, log(15.0f)*2.5f, {0.05f,0.1f,1.0f}};
@@ -63,7 +69,6 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
     p_erde, p_mars, p_jupiter, p_saturn, p_uranus, p_neptun, p_pluto, p_mond});
 
   initializeOrbits();
-  initializeShaderPrograms();
 
   std::cout << "Realistic shader activated.\n";
 }
@@ -124,10 +129,12 @@ void ApplicationSolar::upload_sun(std::shared_ptr<planet> sun) const {
   // shader it
   glUniformMatrix4fv(m_shaders.at("sun").u_locs.at("ModelMatrix"),
                      1, GL_FALSE, glm::value_ptr(model_matrix));
-  
+
+  //glUseProgram(m_shaders.at("sun").handle);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, texSun.handle);
   // get location of sampler uniform
-  int color_sampler_location = glGetUniformLocation(m_shaders.at("sun").handle, "TextureSun");
-  glUniform1i(color_sampler_location, 0);
+  glUniform1i(glGetUniformLocation(m_shaders.at("sun").handle, "TextureSun"), GLint(0));
 
   // extra matrix for normal transformation to keep them orthogonal to surface
   //glm::fmat4 normal_matrix = glm::inverseTranspose(glm::inverse(m_view_transform) * model_matrix);
@@ -497,7 +504,7 @@ void ApplicationSolar::initializeStars() {
 
 // load models
 void ApplicationSolar::initializeGeometry() {
-  model planet_model = model_loader::obj(m_resource_path + "models/sphere.obj", model::NORMAL);
+  model planet_model = model_loader::obj(m_resource_path + "models/sphere.obj", model::NORMAL | model::TEXCOORD);
 
   // generate vertex array object
   glGenVertexArrays(1, &planet_object.vertex_AO);
@@ -515,10 +522,16 @@ void ApplicationSolar::initializeGeometry() {
   glEnableVertexAttribArray(0);
   // first attribute is 3 floats with no offset & stride
   glVertexAttribPointer(0, model::POSITION.components, model::POSITION.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::POSITION]);
+  
   // activate second attribute on gpu
   glEnableVertexAttribArray(1);
   // second attribute is 3 floats with no offset & stride
   glVertexAttribPointer(1, model::NORMAL.components, model::NORMAL.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::NORMAL]);
+
+  // activate third attribute on gpu
+  glEnableVertexAttribArray(2);
+  // third attribute is 2 floats with no offset & stride
+  glVertexAttribPointer(2, model::TEXCOORD.components, model::TEXCOORD.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::TEXCOORD]);
 
    // generate generic buffer
   glGenBuffers(1, &planet_object.element_BO);
@@ -535,28 +548,34 @@ void ApplicationSolar::initializeGeometry() {
 
 
   // texture sun
-  texture_object texSun;
-  pixel_data pixData = texture_loader::file("../resources/textures/sunmap.png");
+  pixel_data pixData = texture_loader::file(m_resource_path + "textures/2k_sun.png");
+
   // activate Texture Unit to which to bind texture 
   glActiveTexture(GL_TEXTURE0);
   // generate Texture Object
   glGenTextures(1, &texSun.handle);
   // bind Texture Object to 2d texture binding point of unit
   glBindTexture(GL_TEXTURE_2D, texSun.handle);
+
   // define mandatory sampling parameters
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   // pixel transfer
   glTexImage2D(GL_TEXTURE_2D,
                0,
-               GL_RGB8,
-               pixData.width,
-               pixData.height,
+               pixData.channels, //GL_RGB8
+               GLsizei(pixData.width),
+               GLsizei(pixData.height),
                0,
-               GL_RGB,
+               pixData.channels,
+               //pixData.channel_type,
                pixData.channel_type,
-               &pixData.pixels
+               pixData.ptr()
+               //&pixData.pixels
                );
+
 }
 
 // generate orbits
