@@ -49,6 +49,7 @@ void main() {
 
   // export color
   if (PlanetColor == vec3(0.05f, 0.1f, 1.0f)) {
+    colorLinear = colorLinear - ambientColor;
     out_Color = vec4( (lambertian * texture(Texture, pass_TexCoord) +
       (1.0-lambertian) * texture(TextureNight, pass_TexCoord)).xyz + colorLinear, 1.0 );
   }
