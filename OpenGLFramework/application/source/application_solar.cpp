@@ -530,7 +530,9 @@ void ApplicationSolar::initializeStars() {
 
 // load models
 void ApplicationSolar::initializeGeometry() {
-  model planet_model = model_loader::obj(m_resource_path + "models/sphere.obj", model::NORMAL | model::TEXCOORD);
+  // new sphere model by LEON HUTANS:
+  // this model fixes the texture bug of wrong orientation
+  model planet_model = model_loader::obj(m_resource_path + "models/sphere_new_fromcube.obj", model::NORMAL | model::TEXCOORD);
 
   // generate vertex array object
   glGenVertexArrays(1, &planet_object.vertex_AO);
