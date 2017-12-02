@@ -27,14 +27,12 @@ using namespace gl;
 ApplicationSolar::ApplicationSolar(std::string const& resource_path)
  :Application{resource_path} {
 
+  // enable transparency
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-  // enable transparency
-  //glDisable(GL_CULL_FACE);
+  glDisable(GL_CULL_FACE);
 
   initializeShaderPrograms();
-  //initializeTextures();
   initializeGeometry();
   initializeStars();
   //glEnable(GL_TEXTURE_2D);
@@ -132,7 +130,7 @@ void ApplicationSolar::upload_planet_transforms(std::shared_ptr<planet> planet, 
   glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
 }
 
-void ApplicationSolar::upload_sun(std::shared_ptr<planet> sun, texture_object obj) const {
+void ApplicationSolar::upload_sun(std::shared_ptr<planet> sun, std::string shadermode, texture_object obj) const {
 
   // intrinsic rotation
   glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime())*sun->m_intr_rot_speed, glm::fvec3{0.0f, 1.0f, 0.0f});
@@ -140,19 +138,23 @@ void ApplicationSolar::upload_sun(std::shared_ptr<planet> sun, texture_object ob
   // scale sun
   model_matrix = glm::scale(model_matrix, glm::fvec3{sun->m_size,sun->m_size,sun->m_size});
 
-  // color sun
-  // glUniform3fv(m_shaders.at("sun").u_locs.at("SunColor"), 1,
-  //   glm::value_ptr(sun->m_color));
-  
+  std::string mode = "";
+  if (shadermode == "planet") {
+    mode = "sun";
+  }
+  if (shadermode == "cel") {
+    mode = "sun_cel";
+  }
+
   // shader it
-  glUniformMatrix4fv(m_shaders.at("sun").u_locs.at("ModelMatrix"),
+  glUniformMatrix4fv(m_shaders.at(mode).u_locs.at("ModelMatrix"),
                      1, GL_FALSE, glm::value_ptr(model_matrix));
 
   //glUseProgram(m_shaders.at("sun").handle);
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, obj.handle);
   // get location of sampler uniform
-  glUniform1i(glGetUniformLocation(m_shaders.at("sun").handle, "Texture"), GLint(0));
+  glUniform1i(glGetUniformLocation(m_shaders.at(mode).handle, "Texture"), GLint(0));
 
   // extra matrix for normal transformation to keep them orthogonal to surface
   //glm::fmat4 normal_matrix = glm::inverseTranspose(glm::inverse(m_view_transform) * model_matrix);
@@ -198,21 +200,30 @@ void ApplicationSolar::render() const {
 
   // check which shader should be used (realistic or cel shader)
   if (celshading) {
-    // bind shader to upload uniforms
-    glUseProgram(m_shaders.at("cel").handle);
-    // sun position
-    glUniform3fv(m_shaders.at("cel").u_locs.at("SunPosition"), 1,
-      glm::value_ptr(glm::fvec3{0.0f,0.0f,0.0f}));
     shadermode = "cel";
+    // bind shader to upload uniforms
+    glUseProgram(m_shaders.at("sun_cel").handle);
+    // sun position
+    glUniform3fv(m_shaders.at("sun_cel").u_locs.at("SunPosition"), 1,
+    glm::value_ptr(glm::fvec3{0.0f,0.0f,0.0f}));
   }
   else {
-    // bind shader to upload uniforms
-    glUseProgram(m_shaders.at("planet").handle);
-    // sun position
-    glUniform3fv(m_shaders.at("planet").u_locs.at("SunPosition"), 1,
-      glm::value_ptr(glm::fvec3{0.0f,0.0f,0.0f}));
     shadermode = "planet";
+    // bind shader to upload uniforms
+    glUseProgram(m_shaders.at("sun").handle);
+    // sun position
+    glUniform3fv(m_shaders.at("sun").u_locs.at("SunPosition"), 1,
+    glm::value_ptr(glm::fvec3{0.0f,0.0f,0.0f}));
   }
+
+  // load sun
+  upload_sun(all_planets[0], shadermode, all_texture_objects[0]);
+
+  // bind shader to upload uniforms
+  glUseProgram(m_shaders.at(shadermode).handle);
+  // sun position
+  glUniform3fv(m_shaders.at(shadermode).u_locs.at("SunPosition"), 1,
+      glm::value_ptr(glm::fvec3{0.0f,0.0f,0.0f}));
 
   // activate shader
   glActiveTexture(GL_TEXTURE1);
@@ -224,14 +235,6 @@ void ApplicationSolar::render() const {
   for (unsigned int i = 1; i < all_planets.size(); ++i) {
     upload_planet_transforms(all_planets[i], shadermode, all_texture_objects[i]);
   }
-
-  // bind shader to upload uniforms
-  glUseProgram(m_shaders.at("sun").handle);
-  // sun position
-  glUniform3fv(m_shaders.at("sun").u_locs.at("SunPosition"), 1,
-    glm::value_ptr(glm::fvec3{0.0f,0.0f,0.0f}));
-  // load sun
-  upload_sun(all_planets[0], all_texture_objects[0]);
 
   // bind shader to upload uniforms
   glUseProgram(m_shaders.at("star").handle);
@@ -275,6 +278,11 @@ void ApplicationSolar::updateView() {
                       1, GL_FALSE, glm::value_ptr(view_matrix));
 
   // upload matrix to gpu
+  glUseProgram(m_shaders.at("sun_cel").handle);
+  glUniformMatrix4fv(m_shaders.at("sun_cel").u_locs.at("ViewMatrix"),
+                      1, GL_FALSE, glm::value_ptr(view_matrix));
+
+  // upload matrix to gpu
   glUseProgram(m_shaders.at("cel").handle);
   glUniformMatrix4fv(m_shaders.at("cel").u_locs.at("ViewMatrix"),
                       1, GL_FALSE, glm::value_ptr(view_matrix));
@@ -299,6 +307,11 @@ void ApplicationSolar::updateProjection() {
   // upload matrix to gpu
   glUseProgram(m_shaders.at("sun").handle);
   glUniformMatrix4fv(m_shaders.at("sun").u_locs.at("ProjectionMatrix"),
+                     1, GL_FALSE, glm::value_ptr(m_view_projection));
+
+  // upload matrix to gpu
+  glUseProgram(m_shaders.at("sun_cel").handle);
+  glUniformMatrix4fv(m_shaders.at("sun_cel").u_locs.at("ProjectionMatrix"),
                      1, GL_FALSE, glm::value_ptr(m_view_projection));
 
   // upload matrix to gpu
@@ -441,6 +454,9 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.emplace("cel", shader_program{m_resource_path + "shaders/planet.vert",
                                            m_resource_path + "shaders/celshading.frag"});
 
+  m_shaders.emplace("sun_cel", shader_program{m_resource_path + "shaders/sun_cel.vert",
+                                           m_resource_path + "shaders/sun_cel.frag"});
+
   // request uniform locations for shader program
   //m_shaders.at("planet").u_locs["NormalMatrix"] = -1;
   m_shaders.at("planet").u_locs["ModelMatrix"] = -1;
@@ -465,7 +481,12 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.at("sun").u_locs["ProjectionMatrix"] = -1;
   m_shaders.at("sun").u_locs["SunPosition"] = -1;
   m_shaders.at("sun").u_locs["Texture"] = -1;
-  // m_shaders.at("sun").u_locs["SunColor"] = -1;
+
+  m_shaders.at("sun_cel").u_locs["ModelMatrix"] = -1;
+  m_shaders.at("sun_cel").u_locs["ViewMatrix"] = -1;
+  m_shaders.at("sun_cel").u_locs["ProjectionMatrix"] = -1;
+  m_shaders.at("sun_cel").u_locs["SunPosition"] = -1;
+  m_shaders.at("sun").u_locs["Texture"] = -1;
 
   //m_shaders.at("cel").u_locs["NormalMatrix"] = -1;
   m_shaders.at("cel").u_locs["ModelMatrix"] = -1;
@@ -667,6 +688,9 @@ ApplicationSolar::~ApplicationSolar() {
 
   glDeleteBuffers(1, &orbit_object.vertex_BO);
   glDeleteVertexArrays(1, &orbit_object.vertex_AO);
+
+  glDeleteTextures(0, &all_texture_objects[0].handle);
+  glDeleteTextures(1, &all_texture_objects[1].handle);
 }
 
 // exe entry point

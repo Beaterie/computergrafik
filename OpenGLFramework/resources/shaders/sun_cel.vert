@@ -12,7 +12,6 @@ uniform mat4 ProjectionMatrix;
 
 out vec3 pass_Normal;
 out vec3 pass_Position;
-out vec2 pass_TexCoord;
 
 void main(void)
 {
@@ -23,7 +22,4 @@ void main(void)
 
 	// normal position
 	pass_Normal = (ViewMatrix * ModelMatrix * vec4(in_Normal, 0.0)).xyz;
-
-	// texture position
-	pass_TexCoord = in_TexCoord;
 }
