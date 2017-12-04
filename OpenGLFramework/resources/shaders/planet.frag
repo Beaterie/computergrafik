@@ -19,7 +19,7 @@ void main() {
 
   // color vectors
   vec3 ambientColor = PlanetColor * 0.005;
-  vec3 diffuseColor = vec3(0.005);
+  vec3 diffuseColor = texture(Texture, pass_TexCoord).xyz;
   vec3 specColor    = vec3(0.1);
   // Blinn-Phong power a
   float shininess   = 2;
@@ -48,12 +48,12 @@ void main() {
                      specular * specColor;
 
   // export color
+  out_Color = vec4(colorLinear, 1.0);
+
+  // export color with earth night texture
   if (PlanetColor == vec3(0.05f, 0.1f, 1.0f)) {
-    colorLinear = colorLinear - ambientColor;
-    out_Color = vec4( (lambertian * texture(Texture, pass_TexCoord) +
-      (1.0-lambertian) * texture(TextureNight, pass_TexCoord)).xyz + colorLinear, 1.0 );
-  }
-  else {
-    out_Color = vec4(lambertian * texture(Texture, pass_TexCoord).xyz + colorLinear, 1.0);
+    out_Color = vec4( colorLinear + (
+      (1.0-lambertian) * texture(TextureNight, pass_TexCoord)
+      ).xyz, 1.0 );
   }
 }
