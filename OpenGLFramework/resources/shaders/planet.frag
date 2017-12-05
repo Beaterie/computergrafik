@@ -3,13 +3,14 @@
 in  vec4 pass_Normal;
 in  vec4 pass_Position;
 in  vec2 pass_TexCoord;
+in  vec4 pass_Tangent;
 
 uniform vec3 SunPosition;
 uniform vec3 PlanetColor;
 uniform mat4 ViewMatrix;
-
 uniform sampler2D Texture;
 uniform sampler2D TextureNight;
+uniform sampler2D NormalMap;
 
 out vec4 out_Color;
 

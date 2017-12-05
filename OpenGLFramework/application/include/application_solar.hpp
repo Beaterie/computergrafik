@@ -39,6 +39,7 @@ class ApplicationSolar : public Application {
   void initializeShaderPrograms();
   void initializeSkybox();
   void initializeGeometry();
+  void initializeNormalMaps();
   void initializeTextures(unsigned int num, unsigned int unit_num);
   void initializeStars();
   void initializeOrbits();

@@ -479,6 +479,7 @@ void ApplicationSolar::initializeShaderPrograms() {
   // request uniform locations for shader program
   m_shaders.at("skybox").u_locs["ProjectionMatrix"] = -1;
   m_shaders.at("skybox").u_locs["ViewMatrix"] = -1;
+  m_shaders.at("skybox").u_locs["TextureSky"] = -1;
 
   m_shaders.at("planet").u_locs["ModelMatrix"] = -1;
   m_shaders.at("planet").u_locs["ViewMatrix"] = -1;
@@ -487,6 +488,7 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.at("planet").u_locs["PlanetColor"] = -1;
   m_shaders.at("planet").u_locs["Texture"] = -1;
   m_shaders.at("planet").u_locs["TextureNight"] = -1;
+  m_shaders.at("planet").u_locs["NormalMap"] = -1;
 
   m_shaders.at("star").u_locs["ViewMatrix"] = -1;
   m_shaders.at("star").u_locs["ProjectionMatrix"] = -1;
@@ -664,6 +666,26 @@ void ApplicationSolar::initializeSkybox() {
   skybox_object.draw_mode = GL_TRIANGLES;
   // transfer number of indices to model object 
   skybox_object.num_elements = GLsizei(skybox_model.indices.size());
+}
+
+void ApplicationSolar::initializeNormalMaps() {
+  std::vector<pixel_data> normalMaps{};
+  pixel_data mercury = texture_loader::file(m_resource_path + "textures/" + "2k_mercury_normal.png");
+  normalMaps.push_back(mercury);
+
+  glActiveTexture(GL_TEXTURE2);
+  glGenTextures(1, &all_texture_objects[1].handle);
+  glBindTexture(GL_TEXTURE_2D, all_texture_objects[1].handle);
+
+  // define mandatory sampling parameters
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  // pixel transfer
+  glTexImage2D(GL_TEXTURE_2D,0,mercury.channels,GLsizei(mercury.width),
+               GLsizei(mercury.height),0,mercury.channels,mercury.channel_type,mercury.ptr());
+  
 }
 
 void ApplicationSolar::initializeTextures(unsigned int num, unsigned int unit_num) {
