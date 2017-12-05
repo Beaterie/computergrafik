@@ -5,7 +5,7 @@ in vec2 pass_TexCoord;
 uniform mat4 ProjectMatrix;
 uniform mat4 ViewMatrix;
 
-uniform sampler2D Texture;
+uniform sampler2D TextureSky;
 
 out vec4 out_Color;
 

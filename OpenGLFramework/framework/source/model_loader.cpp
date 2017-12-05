@@ -154,8 +154,20 @@ std::vector<glm::fvec3> generate_tangents(tinyobj::mesh_t const& model) {
                            model.indices[i * 3 + 1],
                            model.indices[i * 3 + 2]};
     // access an attribute of xth vert with vector access "attribute[indices[x]]"
+    unsigned delt_p1 = positions[indices[1]] - positions[indices[0]];
+    unsigned delt_p2 = positions[indices[2]] - positions[indices[0]];
+    unsigned delt_u1 = texcoords[indices[1]].x - texcoords[indices[0]].x;
+    unsigned delt_u2 = texcoords[indices[2]].x - texcoords[indices[0]].x;
+    unsigned delt_v1 = texcoords[indices[1]].y - texcoords[indices[0]].y;
+    unsigned delt_v2 = texcoords[indices[2]].y - texcoords[indices[0]].y;
     
     // calculate tangent for the triangle and add it to the accumulation tangents of the adjacent vertices
+    unsigned calc = 1 / (delt_u1 * delt_v2 - delt_u2 * delt_v1);
+    unsigned t_x = calc * (delt_v2 * delt_p1.x - delt_v1 * delt_p2.x);
+    unsigned t_y = calc * (delt_v2 * delt_p1.y - delt_v1 * delt_p2.y);
+    unsigned t_z = calc * (delt_v2 * delt_p1.z - delt_v1 * delt_p2.z);
+    tangents[indices[0]] = 
+
     // see generate_normals() for similar workflow 
   }
   // normalize and orthogonalize accumulated vertex tangents
