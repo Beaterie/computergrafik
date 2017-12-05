@@ -168,6 +168,27 @@ void ApplicationSolar::upload_sun(std::shared_ptr<planet> sun, std::string shade
   glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
 }
 
+void ApplicationSolar::upload_skybox(texture_object obj) const {
+
+  // remove depth
+  glDepthMask(GL_FALSE);
+
+  // activate texture
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, obj.handle);
+  // get location of sampler uniform
+  glUniform1i(glGetUniformLocation(m_shaders.at("skybox").handle, "Texture"), GLint(0));
+
+  // bind the VAO to draw
+  glBindVertexArray(skybox_object.vertex_AO);
+
+  // draw 
+  glDrawArrays(GL_TRIANGLES, 0, 36);
+
+  // reactive depth
+  glDepthMask(GL_TRUE);
+}
+
 void ApplicationSolar::upload_orbits(std::shared_ptr<planet> planet) const {
 
   // shader it
@@ -197,6 +218,11 @@ void ApplicationSolar::upload_orbits(std::shared_ptr<planet> planet) const {
 void ApplicationSolar::render() const {
 
   std::string shadermode = "";
+
+  // bind shader to upload uniforms
+  glUseProgram(m_shaders.at("skybox").handle);
+  // load skybox
+  upload_skybox(all_texture_objects[12]);
 
   // check which shader should be used (realistic or cel shader)
   if (celshading) {
@@ -286,6 +312,10 @@ void ApplicationSolar::updateView() {
   glUseProgram(m_shaders.at("cel").handle);
   glUniformMatrix4fv(m_shaders.at("cel").u_locs.at("ViewMatrix"),
                       1, GL_FALSE, glm::value_ptr(view_matrix));
+
+  glUseProgram(m_shaders.at("skybox").handle);
+  glUniformMatrix4fv(m_shaders.at("skybox").u_locs.at("ViewMatrix"),
+                      1, GL_FALSE, glm::value_ptr(view_matrix));
 }
 
 void ApplicationSolar::updateProjection() {
@@ -318,6 +348,10 @@ void ApplicationSolar::updateProjection() {
   glUseProgram(m_shaders.at("cel").handle);
   glUniformMatrix4fv(m_shaders.at("cel").u_locs.at("ProjectionMatrix"),
                      1, GL_FALSE, glm::value_ptr(m_view_projection));
+
+  glUseProgram(m_shaders.at("skybox").handle);
+  glUniformMatrix4fv(m_shaders.at("skybox").u_locs.at("ProjectionMatrix"),
+                     1, GL_FALSE, glm::value_ptr(m_view_projection));                
 }
 
 // update uniform locations
@@ -456,6 +490,9 @@ void ApplicationSolar::initializeShaderPrograms() {
 
   m_shaders.emplace("sun_cel", shader_program{m_resource_path + "shaders/sun_cel.vert",
                                            m_resource_path + "shaders/sun_cel.frag"});
+  
+  m_shaders.emplace("skybox", shader_program{m_resource_path + "shaders/skybox.vert",
+                                           m_resource_path + "shaders/skybox.frag"});                                           
 
   // request uniform locations for shader program
   //m_shaders.at("planet").u_locs["NormalMatrix"] = -1;
@@ -494,6 +531,9 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.at("cel").u_locs["ProjectionMatrix"] = -1;
   m_shaders.at("cel").u_locs["SunPosition"] = -1;
   m_shaders.at("cel").u_locs["PlanetColor"] = -1;
+
+  m_shaders.at("skybox").u_locs["ProjectionMatrix"] = -1;
+  m_shaders.at("skybox").u_locs["ViewMatrix"] = -1;
 }
 
 // generate stars
@@ -595,14 +635,134 @@ void ApplicationSolar::initializeGeometry() {
   planet_object.num_elements = GLsizei(planet_model.indices.size());
 }
 
+void ApplicationSolar::initializeSkybox() {
+  // load box model
+  model skybox_model = model_loader::obj(m_resource_path + "models/box.obj", model::NORMAL | model::TEXCOORD);
+
+  // generate vertex array object
+  glGenVertexArrays(1, &skybox_object.vertex_AO);
+  // bind the array for attaching buffers
+  glBindVertexArray(skybox_object.vertex_AO);
+
+  // generate generic buffer
+  glGenBuffers(1, &skybox_object.vertex_BO);
+  // bind this as an vertex array buffer containing all attributes
+  glBindBuffer(GL_ARRAY_BUFFER, skybox_object.vertex_BO);
+  // configure currently bound array buffer
+  glBufferData(GL_ARRAY_BUFFER, GLsizeiptr((sizeof(float) * skybox_model.data.size())), skybox_model.data.data(), GL_STATIC_DRAW);
+
+  // activate first attribute on gpu
+  glEnableVertexAttribArray(0);
+  // first attribute is 3 floats with no offset & stride
+  glVertexAttribPointer(0, model::POSITION.components, model::POSITION.type, GL_FALSE, skybox_model.vertex_bytes, skybox_model.offsets[model::POSITION]);
+  
+  // activate second attribute on gpu
+  glEnableVertexAttribArray(1);
+  // second attribute is 3 floats with no offset & stride
+  glVertexAttribPointer(1, model::NORMAL.components, model::NORMAL.type, GL_FALSE, skybox_model.vertex_bytes, skybox_model.offsets[model::NORMAL]);
+
+  // activate third attribute on gpu
+  //glEnableVertexAttribArray(2);
+  // third attribute is 2 floats with no offset & stride
+  //glVertexAttribPointer(2, model::TEXCOORD.components, model::TEXCOORD.type, GL_FALSE, skybox_model.vertex_bytes, skybox_model.offsets[model::TEXCOORD]);
+
+   // generate generic buffer
+  glGenBuffers(1, &skybox_object.element_BO);
+  // bind this as an vertex array buffer containing all attributes
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, skybox_object.element_BO);
+  // configure currently bound array buffer
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr((unsigned long)model::INDEX.size * skybox_model.indices.size()), skybox_model.indices.data(), GL_STATIC_DRAW);
+
+  // store type of primitive to draw
+  skybox_object.draw_mode = GL_TRIANGLES;
+  // transfer number of indices to model object 
+  skybox_object.num_elements = GLsizei(skybox_model.indices.size());
+}
+
 void ApplicationSolar::initializeTextures(unsigned int num, unsigned int unit_num) {
-  // texture sun
+  // texture all
   pixel_data pixData = texture_loader::file(m_resource_path + "textures/" + all_textures[num]);
 
   // activate Texture Unit to which to bind texture 
   glActiveTexture(GL_TEXTURE0 + unit_num);
   // generate Texture Object
   glGenTextures(1, &all_texture_objects[num].handle);
+
+  // texture skybox
+  if(num == 13) {
+    // bind Texture Object to 2d texture binding point of unit
+    glBindTexture(GL_TEXTURE_CUBE_MAP, all_texture_objects[num].handle);
+    
+    // format cube map texture
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    // pixel transfer on each side
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+                 0,
+                 pixData.channels, //GL_RGB8
+                 GLsizei(pixData.width),
+                 GLsizei(pixData.height),
+                 0,
+                 pixData.channels,
+                 pixData.channel_type,
+                 pixData.ptr()
+                 );
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+                 0,
+                 pixData.channels, //GL_RGB8
+                 GLsizei(pixData.width),
+                 GLsizei(pixData.height),
+                 0,
+                 pixData.channels,
+                 pixData.channel_type,
+                 pixData.ptr()
+                 );
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+                 0,
+                 pixData.channels, //GL_RGB8
+                 GLsizei(pixData.width),
+                 GLsizei(pixData.height),
+                 0,
+                 pixData.channels,
+                 pixData.channel_type,
+                 pixData.ptr()
+                 );
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+                 0,
+                 pixData.channels, //GL_RGB8
+                 GLsizei(pixData.width),
+                 GLsizei(pixData.height),
+                 0,
+                 pixData.channels,
+                 pixData.channel_type,
+                 pixData.ptr()
+                 ); 
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+                 0,
+                 pixData.channels, //GL_RGB8
+                 GLsizei(pixData.width),
+                 GLsizei(pixData.height),
+                 0,
+                 pixData.channels,
+                 pixData.channel_type,
+                 pixData.ptr()
+                 );           
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+                 0,
+                 pixData.channels, //GL_RGB8
+                 GLsizei(pixData.width),
+                 GLsizei(pixData.height),
+                 0,
+                 pixData.channels,
+                 pixData.channel_type,
+                 pixData.ptr()
+                 );                         
+  }
+
   // bind Texture Object to 2d texture binding point of unit
   glBindTexture(GL_TEXTURE_2D, all_texture_objects[num].handle);
 

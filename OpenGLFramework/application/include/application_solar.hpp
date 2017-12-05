@@ -32,9 +32,12 @@ class ApplicationSolar : public Application {
   void upload_sun(std::shared_ptr<planet> sun, std::string shadermode, texture_object obj) const;
   // upload orbits
   void upload_orbits(std::shared_ptr<planet> planet) const;
+  // upload skybox
+  void upload_skybox(texture_object obj) const;
 
  protected:
   void initializeShaderPrograms();
+  void initializeSkybox();
   void initializeGeometry();
   void initializeTextures(unsigned int num, unsigned int unit_num);
   void initializeStars();
@@ -45,15 +48,16 @@ class ApplicationSolar : public Application {
   model_object planet_object{};
   model_object star_object{};
   model_object orbit_object{};
+  model_object skybox_object{};
 
   // vectors with content
   std::vector<std::shared_ptr<planet>> all_planets;
   std::vector<float> all_stars;
   std::vector<float> all_orbits;
-  std::string all_textures[12] = {"4k_sun.png", "2k_mercury.png", "2k_venus.png",
+  std::string all_textures[13] = {"4k_sun.png", "2k_mercury.png", "2k_venus.png",
     "2k_earth.png", "2k_mars.png", "2k_jupiter.png", "2k_saturn.png", "2k_uranus.png",
-    "2k_neptune.png", "1k_pluto.png", "2k_moon.png", "2k_earth_nightmap.png"};
-  texture_object all_texture_objects[12] = {};
+    "2k_neptune.png", "1k_pluto.png", "2k_moon.png", "2k_earth_nightmap.png", "skybox.png"};
+  texture_object all_texture_objects[13] = {};
   
   // navigator keys
   float press_W = 0.0f;
