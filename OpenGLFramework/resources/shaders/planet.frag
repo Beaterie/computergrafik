@@ -3,7 +3,7 @@
 in  vec4 pass_Normal;
 in  vec4 pass_Position;
 in  vec2 pass_TexCoord;
-in  vec4 pass_Tangent;
+in  vec3 pass_Tangent;
 
 uniform vec3 SunPosition;
 uniform vec3 PlanetColor;
@@ -15,8 +15,13 @@ uniform sampler2D NormalMap;
 out vec4 out_Color;
 
 void main() {
-  // old implementation
-  //out_Color = vec4(abs(normalize(pass_Normal)), 1.0);
+
+  // normal mapping
+  vec3 normal_Mapping = normalize(texture(NormalMap, pass_TexCoord).rgb * 2.0 - 1.0);
+  vec3 bi_Tangent = cross(pass_Normal.xyz, pass_Tangent);
+  mat3 TangentMatrix = mat3(pass_Tangent, bi_Tangent, pass_Normal.xyz);
+  vec3 detailNormal = normalize(TangentMatrix * normal_Mapping);
+
 
   // color vectors
   vec3 ambientColor = PlanetColor * 0.005;
@@ -29,7 +34,7 @@ void main() {
   vec3 viewerWorldPos = normalize(vec3(ViewMatrix[3][0], ViewMatrix[3][1], ViewMatrix[3][2]));
   vec3 v = normalize(viewerWorldPos - pass_Position.xyz);
   vec3 l = normalize(SunPosition - pass_Position.xyz);
-  vec3 n = normalize(pass_Normal.xyz);
+  vec3 n = normalize(detailNormal);
   vec3 h = normalize(v + l);
 
   // angle

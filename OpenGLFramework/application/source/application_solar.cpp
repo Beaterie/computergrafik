@@ -121,9 +121,10 @@ void ApplicationSolar::upload_planet_transforms(std::shared_ptr<planet> planet, 
   }
 
   // extra matrix for normal transformation to keep them orthogonal to surface
-  //glm::fmat4 normal_matrix = glm::inverseTranspose(glm::inverse(m_view_transform) * model_matrix);
-  //glUniformMatrix4fv(m_shaders.at(shadermode).u_locs.at("NormalMatrix"),
-  //                   1, GL_FALSE, glm::value_ptr(normal_matrix));
+  glUniform1i(m_shaders.at("planet").u_locs.at("NormalMap"), 0);
+  glm::fmat4 normal_matrix = glm::inverseTranspose(glm::inverse(m_view_transform) * model_matrix);
+  glUniformMatrix4fv(m_shaders.at(shadermode).u_locs.at("NormalMatrix"),
+                     1, GL_FALSE, glm::value_ptr(normal_matrix));
 
   // bind the VAO to draw
   glBindVertexArray(planet_object.vertex_AO);
@@ -484,6 +485,7 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.at("planet").u_locs["ModelMatrix"] = -1;
   m_shaders.at("planet").u_locs["ViewMatrix"] = -1;
   m_shaders.at("planet").u_locs["ProjectionMatrix"] = -1;
+  m_shaders.at("planet").u_locs["NormalMatrix"] = -1;
   m_shaders.at("planet").u_locs["SunPosition"] = -1;
   m_shaders.at("planet").u_locs["PlanetColor"] = -1;
   m_shaders.at("planet").u_locs["Texture"] = -1;
