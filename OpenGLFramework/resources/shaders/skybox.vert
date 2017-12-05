@@ -12,7 +12,7 @@ out vec2 pass_TexCoord;
 
 void main() {
 
-    gl_Position = ProjectionMatrix * ViewMatrix * vec4(in_Position, 1.0);
+    gl_Position = ProjectionMatrix * vec4(in_Position, 1.0);
 
     pass_TexCoord = in_TexCoord;
     

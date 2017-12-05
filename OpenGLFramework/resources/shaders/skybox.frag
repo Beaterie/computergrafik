@@ -11,5 +11,5 @@ out vec4 out_Color;
 
 void main() {
     // export color    
-    out_Color = texture(Texture, pass_TexCoord);
+    out_Color = texture(TextureSky, pass_TexCoord);
 }
