@@ -11,6 +11,5 @@ out vec4 out_Color;
 
 void main() {
     // export color    
-    ColTex = texture(Texture, pass_TexCoord);
-    out_Color = vec4(ColTex, 0);
+    out_Color = texture(Texture, pass_TexCoord);
 }

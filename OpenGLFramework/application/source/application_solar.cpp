@@ -31,7 +31,8 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glDisable(GL_CULL_FACE);
-
+  
+  initializeSkybox();
   initializeShaderPrograms();
   initializeGeometry();
   initializeStars();
@@ -654,17 +655,7 @@ void ApplicationSolar::initializeSkybox() {
   // activate first attribute on gpu
   glEnableVertexAttribArray(0);
   // first attribute is 3 floats with no offset & stride
-  glVertexAttribPointer(0, model::POSITION.components, model::POSITION.type, GL_FALSE, skybox_model.vertex_bytes, skybox_model.offsets[model::POSITION]);
-  
-  // activate second attribute on gpu
-  glEnableVertexAttribArray(1);
-  // second attribute is 3 floats with no offset & stride
-  glVertexAttribPointer(1, model::NORMAL.components, model::NORMAL.type, GL_FALSE, skybox_model.vertex_bytes, skybox_model.offsets[model::NORMAL]);
-
-  // activate third attribute on gpu
-  //glEnableVertexAttribArray(2);
-  // third attribute is 2 floats with no offset & stride
-  //glVertexAttribPointer(2, model::TEXCOORD.components, model::TEXCOORD.type, GL_FALSE, skybox_model.vertex_bytes, skybox_model.offsets[model::TEXCOORD]);
+  glVertexAttribPointer(0, model::TEXCOORD.components, model::TEXCOORD.type, GL_FALSE, skybox_model.vertex_bytes, skybox_model.offsets[model::TEXCOORD]);
 
    // generate generic buffer
   glGenBuffers(1, &skybox_object.element_BO);

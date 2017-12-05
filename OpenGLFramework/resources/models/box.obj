@@ -9,8 +9,6 @@
 # Corrected face normals - Scott Kuhl
 # Renamed texture and material file - Scott Kuhl
 
-mtllib cube.mtl
-
 # Vertices
 v -0.5 0.5 -0.5
 v -0.5 0.5 0.5
