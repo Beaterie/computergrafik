@@ -594,7 +594,7 @@ void ApplicationSolar::initializeStars() {
 void ApplicationSolar::initializeGeometry() {
   // new sphere model by LEON HUTANS:
   // this model fixes the texture bug of wrong orientation
-  model planet_model = model_loader::obj(m_resource_path + "models/sphere_new_fromcube.obj", model::NORMAL | model::TEXCOORD);
+  model planet_model = model_loader::obj(m_resource_path + "models/sphere_new_fromcube.obj", model::NORMAL | model::TEXCOORD | model::TANGENT);
 
   // generate vertex array object
   glGenVertexArrays(1, &planet_object.vertex_AO);
@@ -623,7 +623,12 @@ void ApplicationSolar::initializeGeometry() {
   // third attribute is 2 floats with no offset & stride
   glVertexAttribPointer(2, model::TEXCOORD.components, model::TEXCOORD.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::TEXCOORD]);
 
-   // generate generic buffer
+  // activate fourth attribute on gpu
+  glEnableVertexAttribArray(3);
+  // third attribute is 2 floats with no offset & stride
+  glVertexAttribPointer(3, model::TANGENT.components, model::TANGENT.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::TANGENT]);
+
+ // generate generic buffer
   glGenBuffers(1, &planet_object.element_BO);
   // bind this as an vertex array buffer containing all attributes
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, planet_object.element_BO);
