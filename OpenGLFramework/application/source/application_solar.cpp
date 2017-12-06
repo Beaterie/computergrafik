@@ -121,11 +121,13 @@ void ApplicationSolar::upload_planet_transforms(std::shared_ptr<planet> planet, 
     glUniform1i(glGetUniformLocation(m_shaders.at(shadermode).handle, "Texture"), GLint(0));
   }
 
-  // extra matrix for normal transformation to keep them orthogonal to surface
-  glUniform1i(m_shaders.at("planet").u_locs.at("NormalMap"), 0);
+  // normal uniform
   glm::fmat4 normal_matrix = glm::inverseTranspose(glm::inverse(m_view_transform) * model_matrix);
   glUniformMatrix4fv(m_shaders.at(shadermode).u_locs.at("NormalMatrix"),
                      1, GL_FALSE, glm::value_ptr(normal_matrix));
+  glActiveTexture(GL_TEXTURE2);
+  glBindTexture(GL_TEXTURE_2D, obj.handle);
+  glUniform1i(glGetUniformLocation(m_shaders.at(shadermode).handle, "NormalMap"), GLint(0));
 
   // bind the VAO to draw
   glBindVertexArray(planet_object.vertex_AO);
