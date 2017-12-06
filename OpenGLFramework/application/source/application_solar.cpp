@@ -226,6 +226,7 @@ void ApplicationSolar::render() const {
   glActiveTexture(GL_TEXTURE0);
   // bind Texture Object to 2d texture binding point of unit
   glBindTexture(GL_TEXTURE_CUBE_MAP, all_texture_objects[12].handle);
+  glUniform1i(glGetUniformLocation(m_shaders.at("skybox").handle, "TextureSky"), GLint(0));
   glBindVertexArray(skybox_object.vertex_AO);
 
   glEnable(GL_CULL_FACE);
