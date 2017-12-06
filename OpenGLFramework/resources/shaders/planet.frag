@@ -23,14 +23,6 @@ void main() {
   vec3 detailNormal = normalize(TangentMatrix * normal_Mapping);
   vec3 new_SunPos = (ViewMatrix * vec4(SunPosition, 1.0)).xyz / ((ViewMatrix * vec4(SunPosition, 1.0))).w;
 
-
-  // color vectors
-  vec3 ambientColor = PlanetColor * 0.005;
-  vec3 diffuseColor = texture(Texture, pass_TexCoord).xyz;
-  vec3 specColor    = vec3(0.1);
-  // Blinn-Phong power a
-  float shininess   = 2;
-
   // vectors
   vec3 viewerWorldPos = normalize(vec3(ViewMatrix[3][0], ViewMatrix[3][1], ViewMatrix[3][2]));
   vec3 v = normalize(viewerWorldPos - pass_Position.xyz);
@@ -38,6 +30,14 @@ void main() {
   vec3 n = normalize(detailNormal);
   vec3 h = normalize(v + l);
 
+  // color vectors
+  vec3 Color        = texture(Texture, pass_TexCoord).xyz;
+  vec3 ambientColor = Color * 0.05;
+  vec3 diffuseColor = Color * max(dot(n,l),0);
+  vec3 specColor    = vec3(0.1);
+
+  // Blinn-Phong power a
+  float shininess   = 3;
   // angle
   float lambertian = clamp(dot(l,n), 0.0, 1.0);
   // specular multiplier
@@ -51,7 +51,7 @@ void main() {
 
   // set color
   vec3 colorLinear = ambientColor +
-                     lambertian * diffuseColor +
+                     diffuseColor +
                      specular * specColor;
 
   // export color
