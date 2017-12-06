@@ -221,7 +221,7 @@ void ApplicationSolar::render() const {
 
   std::string shadermode = "";
 
-  //glDepthMask(GL_FALSE);
+  glDepthMask(GL_FALSE);
   glUseProgram(m_shaders.at("skybox").handle);
   glActiveTexture(GL_TEXTURE0);
   // bind Texture Object to 2d texture binding point of unit
@@ -229,12 +229,12 @@ void ApplicationSolar::render() const {
   glUniform1i(glGetUniformLocation(m_shaders.at("skybox").handle, "TextureSky"), GLint(0));
   glBindVertexArray(skybox_object.vertex_AO);
 
-  glEnable(GL_CULL_FACE);
-  glCullFace(GL_FRONT);
-  glDisable(GL_DEPTH_TEST);
+  //glEnable(GL_CULL_FACE);
+  //glCullFace(GL_FRONT);
+  //glDisable(GL_DEPTH_TEST);
   glDrawElements(skybox_object.draw_mode, skybox_object.num_elements, model::INDEX.type, NULL);
-  glEnable(GL_DEPTH_TEST);
-  //glDepthMask(GL_TRUE);
+  //glEnable(GL_DEPTH_TEST);
+  glDepthMask(GL_TRUE);
 
   // bind shader to upload uniforms
   //glUseProgram(m_shaders.at("skybox").handle);
