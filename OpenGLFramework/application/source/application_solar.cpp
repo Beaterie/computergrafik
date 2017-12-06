@@ -68,12 +68,13 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
   all_planets.insert(std::end(all_planets),{p_sonne, p_merkur, p_venus,
     p_erde, p_mars, p_jupiter, p_saturn, p_uranus, p_neptun, p_pluto, p_mond});
 
-  initializeTextures(12, 0);
+  //initializeTextures(12, 0);
   // initialize textures and bind to texture objects
   for (unsigned int i = 0; i < (sizeof(all_textures)/sizeof(*all_textures)-2); ++i) {
     initializeTextures(i, 0);
   }
   // earth at night texture
+  initializeSkyboxTex();
   initializeTextures(11, 1);
 
   initializeOrbits();
@@ -690,6 +691,42 @@ void ApplicationSolar::initializeNormalMaps() {
   
 }
 
+void ApplicationSolar::initializeSkyboxTex() {
+  pixel_data up = texture_loader::file(m_resource_path + "textures/" + "skybox_up.png");
+  pixel_data down = texture_loader::file(m_resource_path + "textures/" + "skybox_down.png");
+  pixel_data left = texture_loader::file(m_resource_path + "textures/" + "skybox_left.png");
+  pixel_data right = texture_loader::file(m_resource_path + "textures/" + "skybox_right.png");
+  pixel_data front = texture_loader::file(m_resource_path + "textures/" + "skybox_front.png");
+  pixel_data back = texture_loader::file(m_resource_path + "textures/" + "skybox_back.png");
+  std::vector<pixel_data> skyboxTex{up,down,left,right,front,back};
+
+  glActiveTexture(GL_TEXTURE0);
+  glGenTextures(1, &all_texture_objects[12].handle);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, all_texture_objects[12].handle);
+  
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, 0);
+
+  glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X,0,right.channels,GLsizei(right.width),
+                GLsizei(right.height),0,right.channels,right.channel_type,right.ptr());  
+  glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X,0,left.channels,GLsizei(left.width),
+                GLsizei(left.height),0,left.channels,left.channel_type,left.ptr());           
+  glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y,0,up.channels,GLsizei(up.width),
+                GLsizei(up.height),0,up.channels,up.channel_type,up.ptr());
+  glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,0,down.channels,GLsizei(down.width),
+                GLsizei(down.height),0,down.channels,down.channel_type,down.ptr()); 
+  glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,0,back.channels,GLsizei(back.width),
+                GLsizei(back.height),0,back.channels,back.channel_type,back.ptr());
+  glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z,0,front.channels,GLsizei(front.width),
+                GLsizei(front.height),0,front.channels,front.channel_type,front.ptr());
+
+}
+
 void ApplicationSolar::initializeTextures(unsigned int num, unsigned int unit_num) {
   // texture all
   pixel_data pixData = texture_loader::file(m_resource_path + "textures/" + all_textures[num]);
@@ -698,37 +735,6 @@ void ApplicationSolar::initializeTextures(unsigned int num, unsigned int unit_nu
   glActiveTexture(GL_TEXTURE0 + unit_num);
   // generate Texture Object
   glGenTextures(1, &all_texture_objects[num].handle);
-
-  // texture skybox
-  if(num == 12) {
-
-    // bind Texture Object to 2d texture binding point of unit
-    glBindTexture(GL_TEXTURE_CUBE_MAP, all_texture_objects[num].handle);
-    
-    // format cube map texture
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, 0);
-
-    // pixel transfer on each side
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,0,pixData.channels,GLsizei(pixData.width),
-                 GLsizei(pixData.height),0,pixData.channels,pixData.channel_type,pixData.ptr());
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z,0,pixData.channels,GLsizei(pixData.width),
-                 GLsizei(pixData.height),0,pixData.channels,pixData.channel_type,pixData.ptr());
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y,0,pixData.channels,GLsizei(pixData.width),
-                 GLsizei(pixData.height),0,pixData.channels,pixData.channel_type,pixData.ptr());
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,0,pixData.channels,GLsizei(pixData.width),
-                 GLsizei(pixData.height),0,pixData.channels,pixData.channel_type,pixData.ptr()); 
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X,0,pixData.channels,GLsizei(pixData.width),
-                 GLsizei(pixData.height),0,pixData.channels,pixData.channel_type,pixData.ptr());           
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y,0,pixData.channels,GLsizei(pixData.width),
-                 GLsizei(pixData.height),0,pixData.channels,pixData.channel_type,pixData.ptr());  
-    return;
-  }
 
   // bind Texture Object to 2d texture binding point of unit
   glBindTexture(GL_TEXTURE_2D, all_texture_objects[num].handle);

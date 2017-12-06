@@ -40,6 +40,7 @@ class ApplicationSolar : public Application {
   void initializeSkybox();
   void initializeGeometry();
   void initializeNormalMaps();
+  void initializeSkyboxTex();
   void initializeTextures(unsigned int num, unsigned int unit_num);
   void initializeStars();
   void initializeOrbits();
