@@ -221,14 +221,19 @@ void ApplicationSolar::render() const {
 
   std::string shadermode = "";
 
-  glDepthMask(GL_FALSE);
+  //glDepthMask(GL_FALSE);
   glUseProgram(m_shaders.at("skybox").handle);
   glActiveTexture(GL_TEXTURE0);
   // bind Texture Object to 2d texture binding point of unit
   glBindTexture(GL_TEXTURE_CUBE_MAP, all_texture_objects[12].handle);
   glBindVertexArray(skybox_object.vertex_AO);
+
+  glEnable(GL_CULL_FACE);
+  glCullFace(GL_FRONT);
+  glDisable(GL_DEPTH_TEST);
   glDrawElements(skybox_object.draw_mode, skybox_object.num_elements, model::INDEX.type, NULL);
-  glDepthMask(GL_TRUE);
+  glEnable(GL_DEPTH_TEST);
+  //glDepthMask(GL_TRUE);
 
   // bind shader to upload uniforms
   //glUseProgram(m_shaders.at("skybox").handle);
@@ -629,7 +634,7 @@ void ApplicationSolar::initializeGeometry() {
 
 void ApplicationSolar::initializeSkybox() {
   // load box model
-  model skybox_model = model_loader::obj(m_resource_path + "models/box.obj", model::NORMAL | model::TEXCOORD);
+  model skybox_model = model_loader::obj(m_resource_path + "models/box.obj", model::NORMAL);
 
   // generate vertex array object
   glGenVertexArrays(1, &skybox_object.vertex_AO);
@@ -647,16 +652,6 @@ void ApplicationSolar::initializeSkybox() {
   glEnableVertexAttribArray(0);
   // first attribute is 3 floats with no offset & stride
   glVertexAttribPointer(0, model::POSITION.components, model::POSITION.type, GL_FALSE, skybox_model.vertex_bytes, skybox_model.offsets[model::POSITION]);
-  
-  // activate second attribute on gpu
-  glEnableVertexAttribArray(1);
-  // second attribute is 3 floats with no offset & stride
-  glVertexAttribPointer(1, model::NORMAL.components, model::NORMAL.type, GL_FALSE, skybox_model.vertex_bytes, skybox_model.offsets[model::NORMAL]);
-
-  // activate third attribute on gpu
-  glEnableVertexAttribArray(2);
-  // third attribute is 2 floats with no offset & stride
-  glVertexAttribPointer(2, model::TEXCOORD.components, model::TEXCOORD.type, GL_FALSE, skybox_model.vertex_bytes, skybox_model.offsets[model::TEXCOORD]);
 
    // generate generic buffer
   glGenBuffers(1, &skybox_object.element_BO);
@@ -700,7 +695,7 @@ void ApplicationSolar::initializeSkyboxTex() {
   pixel_data back = texture_loader::file(m_resource_path + "textures/" + "skybox_back.png");
   std::vector<pixel_data> skyboxTex{up,down,left,right,front,back};
 
-  glActiveTexture(GL_TEXTURE0);
+  glActiveTexture(GL_TEXTURE1);
   glGenTextures(1, &all_texture_objects[12].handle);
   glBindTexture(GL_TEXTURE_CUBE_MAP, all_texture_objects[12].handle);
   
@@ -709,8 +704,6 @@ void ApplicationSolar::initializeSkyboxTex() {
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, 0);
 
   glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X,0,right.channels,GLsizei(right.width),
                 GLsizei(right.height),0,right.channels,right.channel_type,right.ptr());  

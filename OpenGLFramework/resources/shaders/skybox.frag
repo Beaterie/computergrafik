@@ -1,15 +1,12 @@
 #version 150
 
-in vec2 pass_TexCoord;
+in vec3 pass_TexCoord;
 
-uniform mat4 ProjectMatrix;
-uniform mat4 ViewMatrix;
-
-uniform sampler2D TextureSky;
+uniform samplerCube TextureSky;
 
 out vec4 out_Color;
 
 void main() {
     // export color    
-    out_Color = texture(TextureSky, pass_TexCoord);
+    out_Color = vec4(1.0,0.0,0.0,1.0);//texture(TextureSky, pass_TexCoord);
 }
