@@ -9,8 +9,10 @@ uniform mat4 ProjectionMatrix;
 out vec3 pass_TexCoord;
 
 void main() {
+    mat4 ivm = inverse(ViewMatrix);
+    vec3 camPos = ivm[3].xyz;   
 
-    gl_Position = ProjectionMatrix   * vec4(in_Position, 1.0);
+    gl_Position = ProjectionMatrix * ViewMatrix  * vec4(in_Position + camPos, 1.0);
 
     pass_TexCoord = in_Position;
     

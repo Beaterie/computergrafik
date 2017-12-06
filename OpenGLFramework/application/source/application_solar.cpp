@@ -695,7 +695,7 @@ void ApplicationSolar::initializeSkyboxTex() {
   pixel_data back = texture_loader::file(m_resource_path + "textures/" + "skybox_back.png");
   std::vector<pixel_data> skyboxTex{up,down,left,right,front,back};
 
-  glActiveTexture(GL_TEXTURE1);
+  glActiveTexture(GL_TEXTURE0);
   glGenTextures(1, &all_texture_objects[12].handle);
   glBindTexture(GL_TEXTURE_CUBE_MAP, all_texture_objects[12].handle);
   
