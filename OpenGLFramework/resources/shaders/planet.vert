@@ -22,10 +22,10 @@ void main(void)
 	gl_Position = (ProjectionMatrix * ViewMatrix * ModelMatrix) * vec4(in_Position, 1.0);
 
 	// vertex position
-	pass_Position = (ModelMatrix * vec4(in_Position, 1.0));
+	pass_Position = (ViewMatrix * ModelMatrix * vec4(in_Position, 1.0));
 
 	// normal position
-	pass_Normal = (ModelMatrix * vec4(in_Normal, 0.0));
+	pass_Normal = (NormalMatrix * vec4(in_Normal, 0.0));
 
 	// texture position
 	pass_TexCoord = in_TexCoord;

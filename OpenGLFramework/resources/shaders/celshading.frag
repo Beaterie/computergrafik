@@ -31,19 +31,19 @@ void main() {
     diffuseColor = vec3(1.0,1.0,1.0);
   }
   if (lambertian > 0.0) {
-  	celColor = 0.1;
+    celColor = 0.1;
   }
   if (lambertian > 0.35) {
-  	celColor = 0.2;
+    celColor = 0.2;
   }
   if (lambertian > 0.65) {
-  	celColor = 0.4;
+    celColor = 0.4;
   }
   if (lambertian > 0.85) {
-  	celColor = 0.7;
+    celColor = 0.7;
   }
   if (lambertian > 0.96) {
-  	celColor = 0.9;
+    celColor = 0.9;
   }
 
   // vectors with camera view
@@ -64,7 +64,7 @@ void main() {
 
   // cel-shading border
   if (lambertian < 0.2) {
-	colorLinear = PlanetColor;  	
+  colorLinear = PlanetColor;    
   }
 
   // export color

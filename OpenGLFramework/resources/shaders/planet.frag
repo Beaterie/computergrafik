@@ -17,10 +17,11 @@ out vec4 out_Color;
 void main() {
 
   // normal mapping
-  vec3 normal_Mapping = texture(NormalMap, pass_TexCoord).rgb * 2.0 - 1.0;
+  vec3 normal_Mapping = vec3(texture(NormalMap, pass_TexCoord).rg * 2.0 - 1.0, texture(NormalMap, pass_TexCoord).b);
   vec3 bi_Tangent = cross(pass_Normal.xyz, pass_Tangent);
   mat3 TangentMatrix = mat3(pass_Tangent, bi_Tangent, pass_Normal.xyz);
   vec3 detailNormal = normalize(TangentMatrix * normal_Mapping);
+  vec3 new_SunPos = (ViewMatrix * vec4(SunPosition, 1.0)).xyz / ((ViewMatrix * vec4(SunPosition, 1.0))).w;
 
 
   // color vectors
@@ -28,12 +29,12 @@ void main() {
   vec3 diffuseColor = texture(Texture, pass_TexCoord).xyz;
   vec3 specColor    = vec3(0.1);
   // Blinn-Phong power a
-  float shininess   = 1;
+  float shininess   = 2;
 
   // vectors
   vec3 viewerWorldPos = normalize(vec3(ViewMatrix[3][0], ViewMatrix[3][1], ViewMatrix[3][2]));
   vec3 v = normalize(viewerWorldPos - pass_Position.xyz);
-  vec3 l = normalize(SunPosition - pass_Position.xyz);
+  vec3 l = normalize(new_SunPos - pass_Position.xyz);
   vec3 n = normalize(detailNormal);
   vec3 h = normalize(v + l);
 

@@ -170,9 +170,9 @@ std::vector<glm::fvec3> generate_tangents(tinyobj::mesh_t const& model) {
     t = glm::normalize(t);
 
     // add it to the accumulation tangents of the adjacent vertices
-    tangents[indices[0]] = t;
-    tangents[indices[1]] = t;
-    tangents[indices[2]] = t;
+    tangents[indices[0]] += t;
+    tangents[indices[1]] += t;
+    tangents[indices[2]] += t;
 
   }
   // normalize and orthogonalize accumulated vertex tangents

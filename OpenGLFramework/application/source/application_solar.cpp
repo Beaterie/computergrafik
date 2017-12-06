@@ -359,7 +359,6 @@ void ApplicationSolar::updateProjection() {
   glUseProgram(m_shaders.at("cel").handle);
   glUniformMatrix4fv(m_shaders.at("cel").u_locs.at("ProjectionMatrix"),
                      1, GL_FALSE, glm::value_ptr(m_view_projection));
-
 }
 
 // update uniform locations
@@ -480,7 +479,7 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.emplace("sun", shader_program{m_resource_path + "shaders/sun.vert",
                                            m_resource_path + "shaders/sun.frag"});
 
-  m_shaders.emplace("cel", shader_program{m_resource_path + "shaders/planet.vert",
+  m_shaders.emplace("cel", shader_program{m_resource_path + "shaders/celshading.vert",
                                            m_resource_path + "shaders/celshading.frag"});
 
   m_shaders.emplace("sun_cel", shader_program{m_resource_path + "shaders/sun_cel.vert",
@@ -520,7 +519,6 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.at("sun_cel").u_locs["ViewMatrix"] = -1;
   m_shaders.at("sun_cel").u_locs["ProjectionMatrix"] = -1;
   m_shaders.at("sun_cel").u_locs["SunPosition"] = -1;
-  m_shaders.at("sun").u_locs["Texture"] = -1;
 
   //m_shaders.at("cel").u_locs["NormalMatrix"] = -1;
   m_shaders.at("cel").u_locs["ModelMatrix"] = -1;
@@ -528,7 +526,8 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.at("cel").u_locs["ProjectionMatrix"] = -1;
   m_shaders.at("cel").u_locs["SunPosition"] = -1;
   m_shaders.at("cel").u_locs["PlanetColor"] = -1;
-
+  m_shaders.at("cel").u_locs["NormalMatrix"] = -1;
+  m_shaders.at("cel").u_locs["NormalMap"] = -1;
 }
 
 // generate stars
@@ -671,7 +670,7 @@ void ApplicationSolar::initializeSkybox() {
 
 void ApplicationSolar::initializeNormalMaps() {
   std::vector<pixel_data> normalMaps{};
-  pixel_data mercury = texture_loader::file(m_resource_path + "textures/" + "2k_mercury_normal.png");
+  pixel_data mercury = texture_loader::file(m_resource_path + "textures/" + "2k_earth_normal_map.png");
   normalMaps.push_back(mercury);
 
   glActiveTexture(GL_TEXTURE2);
@@ -686,7 +685,6 @@ void ApplicationSolar::initializeNormalMaps() {
   // pixel transfer
   glTexImage2D(GL_TEXTURE_2D,0,mercury.channels,GLsizei(mercury.width),
                GLsizei(mercury.height),0,mercury.channels,mercury.channel_type,mercury.ptr());
-  
 }
 
 void ApplicationSolar::initializeSkyboxTex() {
@@ -709,18 +707,17 @@ void ApplicationSolar::initializeSkyboxTex() {
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
   glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X,0,right.channels,GLsizei(right.width),
-                GLsizei(right.height),0,right.channels,right.channel_type,right.ptr());  
+                GLsizei(right.height-1),0,right.channels,right.channel_type,right.ptr());  
   glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X,0,left.channels,GLsizei(left.width),
-                GLsizei(left.height),0,left.channels,left.channel_type,left.ptr());           
+                GLsizei(left.height-1),0,left.channels,left.channel_type,left.ptr());           
   glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y,0,up.channels,GLsizei(up.width),
-                GLsizei(up.height),0,up.channels,up.channel_type,up.ptr());
+                GLsizei(up.height-1),0,up.channels,up.channel_type,up.ptr());
   glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,0,down.channels,GLsizei(down.width),
-                GLsizei(down.height),0,down.channels,down.channel_type,down.ptr()); 
+                GLsizei(down.height-1),0,down.channels,down.channel_type,down.ptr()); 
   glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,0,back.channels,GLsizei(back.width),
-                GLsizei(back.height),0,back.channels,back.channel_type,back.ptr());
+                GLsizei(back.height-1),0,back.channels,back.channel_type,back.ptr());
   glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z,0,front.channels,GLsizei(front.width),
-                GLsizei(front.height),0,front.channels,front.channel_type,front.ptr());
-
+                GLsizei(front.height-1),0,front.channels,front.channel_type,front.ptr());
 }
 
 void ApplicationSolar::initializeTextures(unsigned int num, unsigned int unit_num) {
