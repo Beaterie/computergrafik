@@ -76,6 +76,7 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
   // earth at night texture
   initializeSkyboxTex();
   initializeTextures(11, 1);
+  initializeNormalMaps();
 
   initializeOrbits();
 
@@ -122,15 +123,13 @@ void ApplicationSolar::upload_planet_transforms(std::shared_ptr<planet> planet, 
     glBindTexture(GL_TEXTURE_2D, obj.handle);
     // get location of sampler uniform
     glUniform1i(glGetUniformLocation(m_shaders.at(shadermode).handle, "Texture"), GLint(0));
+
+    // normal uniform
+    glm::fmat4 normal_matrix = glm::inverseTranspose(glm::inverse(m_view_transform) * model_matrix);
+    glUniformMatrix4fv(m_shaders.at(shadermode).u_locs.at("NormalMatrix"),
+                       1, GL_FALSE, glm::value_ptr(normal_matrix));
   }
 
-  // normal uniform
-  glm::fmat4 normal_matrix = glm::inverseTranspose(glm::inverse(m_view_transform) * model_matrix);
-  glUniformMatrix4fv(m_shaders.at(shadermode).u_locs.at("NormalMatrix"),
-                     1, GL_FALSE, glm::value_ptr(normal_matrix));
-  glActiveTexture(GL_TEXTURE2);
-  glBindTexture(GL_TEXTURE_2D, obj.handle);
-  glUniform1i(glGetUniformLocation(m_shaders.at(shadermode).handle, "NormalMap"), GLint(0));
 
   // bind the VAO to draw
   glBindVertexArray(planet_object.vertex_AO);
@@ -283,6 +282,11 @@ void ApplicationSolar::render() const {
   for (unsigned int i = 1; i < all_planets.size(); ++i) {
     upload_planet_transforms(all_planets[i], shadermode, all_texture_objects[i], float(i));
   }
+
+  // load mars normal map
+  glActiveTexture(GL_TEXTURE2);
+  glBindTexture(GL_TEXTURE_2D, normaltex_obj.handle);
+  glUniform1i(glGetUniformLocation(m_shaders.at(shadermode).handle, "NormalMap"), GLint(2));
 
   // bind shader to upload uniforms
   glUseProgram(m_shaders.at("star").handle);
@@ -530,8 +534,8 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.at("cel").u_locs["ProjectionMatrix"] = -1;
   m_shaders.at("cel").u_locs["SunPosition"] = -1;
   m_shaders.at("cel").u_locs["PlanetColor"] = -1;
-  m_shaders.at("cel").u_locs["NormalMatrix"] = -1;
-  m_shaders.at("cel").u_locs["NormalMap"] = -1;
+  //m_shaders.at("cel").u_locs["NormalMatrix"] = -1;
+  //m_shaders.at("cel").u_locs["NormalMap"] = -1;
   m_shaders.at("cel").u_locs["PlanetNumber"] = -1;
 }
 
@@ -674,13 +678,11 @@ void ApplicationSolar::initializeSkybox() {
 }
 
 void ApplicationSolar::initializeNormalMaps() {
-  std::vector<pixel_data> normalMaps{};
-  pixel_data mercury = texture_loader::file(m_resource_path + "textures/" + "2k_mercury_normal_map.png");
-  normalMaps.push_back(mercury);
+  pixel_data mars = texture_loader::file(m_resource_path + "textures/" + "2k_mars_normal.png");
 
   glActiveTexture(GL_TEXTURE2);
-  glGenTextures(1, &all_texture_objects[1].handle);
-  glBindTexture(GL_TEXTURE_2D, all_texture_objects[1].handle);
+  glGenTextures(1, &normaltex_obj.handle);
+  glBindTexture(GL_TEXTURE_2D, normaltex_obj.handle);
 
   // define mandatory sampling parameters
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -688,8 +690,8 @@ void ApplicationSolar::initializeNormalMaps() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   // pixel transfer
-  glTexImage2D(GL_TEXTURE_2D,0,mercury.channels,GLsizei(mercury.width),
-               GLsizei(mercury.height),0,mercury.channels,mercury.channel_type,mercury.ptr());
+  glTexImage2D(GL_TEXTURE_2D,0,mars.channels,GLsizei(mars.width),
+               GLsizei(mars.height),0,mars.channels,mars.channel_type,mars.ptr());
 }
 
 void ApplicationSolar::initializeSkyboxTex() {

@@ -60,6 +60,7 @@ class ApplicationSolar : public Application {
     "2k_earth.png", "2k_mars.png", "2k_jupiter.png", "2k_saturn.png", "2k_uranus.png",
     "2k_neptune.png", "1k_pluto.png", "2k_moon.png", "2k_earth_nightmap.png", "skybox.png"};
   texture_object all_texture_objects[13] = {};
+  texture_object normaltex_obj{};
   
   // navigator keys
   float press_W = 0.0f;
