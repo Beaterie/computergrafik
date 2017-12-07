@@ -40,18 +40,18 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
   //glEnable(GL_LIGHTING);
 
   // planets
-  // {size, speed_of_rotation, distance_to_origin, [moon, instrinct rotation,] color}
-  planet sonne{3.0f, 0.0f, 0.0f, false, 0.1f, {1.0f,0.75f,0.0f}};
-  planet merkur{log(4.9f)*0.1f, 87.0f*0.00005f, log(5.8f)*-2.5f, {0.5f,0.5f,0.5f}};
-  planet venus{log(12.0f)*0.1f, 200.0f*0.00005f, log(10.8f)*2.5f, {1.0f,0.9f,0.3f}};
-  planet erde{log(13.0f)*0.1f, 365.0f*0.00005f, log(15.0f)*2.5f, {0.05f,0.1f,1.0f}};
-  planet mars{log(6.8f)*0.1f, 700.0f*0.00005f, log(22.8f)*-2.5f, {0.9f,0.5f,0.3f}};
-  planet jupiter{log(142.0f)*0.1f, 450.0f*0.00005f, log(77.8f)*2.5f, {0.8f,0.5f,0.3f}};
-  planet saturn{log(120.0f)*0.1f, 50.0f*0.00005f, log(190.0f)*-2.5f, {0.8f,0.8f,0.3f}};
-  planet uranus{log(51.0f)*0.1f, 140.0f*0.00005f, log(435.0f)*2.5f, {0.6f,0.8f,1.0f}};
-  planet neptun{log(48.0f)*0.1f, 300.0f*0.00005f, log(1000.0f)*-2.5f, {0.0f,0.1f,0.8f}};
-  planet pluto{log(2.3f)*0.1f, 160.0f*0.00005f, log(6000.0f)*-2.5f, {0.8f,0.5f,0.4f}};
-  planet mond{log(3.4f)*0.1f, 365.0f*0.00005f, log(15.0f)*2.5f, true, {0.7f,0.7f,0.7f}};
+  // {name, size, speed_of_rotation, distance_to_origin, instrinct rotation, color}
+  planet sonne{"Sonne",3.0f, 0.0f, 0.0f, 0.1f, {1.0f,0.75f,0.0f}};
+  planet merkur{"Merkur",log(4.9f)*0.1f, 87.0f*0.00005f, log(5.8f)*-2.5f, {0.5f,0.5f,0.5f}};
+  planet venus{"Venus",log(12.0f)*0.1f, 200.0f*0.00005f, log(10.8f)*2.5f, {1.0f,0.9f,0.3f}};
+  planet erde{"Erde",log(13.0f)*0.1f, 365.0f*0.00005f, log(15.0f)*2.5f, {0.05f,0.1f,1.0f}};
+  planet mars{"Mars",log(6.8f)*0.1f, 700.0f*0.00005f, log(22.8f)*-2.5f, {0.9f,0.5f,0.3f}};
+  planet jupiter{"Jupiter",log(142.0f)*0.1f, 450.0f*0.00005f, log(77.8f)*2.5f, {0.8f,0.5f,0.3f}};
+  planet saturn{"Saturn",log(120.0f)*0.1f, 50.0f*0.00005f, log(190.0f)*-2.5f, {0.8f,0.8f,0.3f}};
+  planet uranus{"Uranus",log(51.0f)*0.1f, 140.0f*0.00005f, log(435.0f)*2.5f, {0.6f,0.8f,1.0f}};
+  planet neptun{"Neptun",log(48.0f)*0.1f, 300.0f*0.00005f, log(1000.0f)*-2.5f, {0.0f,0.1f,0.8f}};
+  planet pluto{"Pluto",log(2.3f)*0.1f, 160.0f*0.00005f, log(6000.0f)*-2.5f, {0.8f,0.5f,0.4f}};
+  planet mond{"Mond",log(3.4f)*0.1f, 365.0f*0.00005f, log(15.0f)*2.5f, {0.7f,0.7f,0.7f}};
   // planet pointer
   auto p_sonne    = std::make_shared<planet>(sonne);
   auto p_merkur   = std::make_shared<planet>(merkur);
@@ -83,7 +83,7 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
 }
 
 // upload planets
-void ApplicationSolar::upload_planet_transforms(std::shared_ptr<planet> planet, std::string shadermode, texture_object obj) const {
+void ApplicationSolar::upload_planet_transforms(std::shared_ptr<planet> planet, std::string shadermode, texture_object obj, float number) const {
 
   // main rotation
   glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime())*planet->m_rot_speed, glm::fvec3{0.0f, 1.0f, 0.0f});
@@ -93,7 +93,7 @@ void ApplicationSolar::upload_planet_transforms(std::shared_ptr<planet> planet, 
   model_matrix = glm::rotate(model_matrix, float(glfwGetTime())*planet->m_intr_rot_speed, glm::fvec3{0.0f, 1.0f, 0.0f});
   
   // if moon, rotate around earth
-  if (planet->m_moon == true) {
+  if (planet->m_name == "Mond") {
     // moon rotation
     model_matrix = glm::rotate(model_matrix, float(glfwGetTime()), glm::fvec3{0.0f, 1.0f, 0.0f});
     // moon distance (distance to earth)
@@ -106,6 +106,9 @@ void ApplicationSolar::upload_planet_transforms(std::shared_ptr<planet> planet, 
   // color
   glUniform3fv(m_shaders.at(shadermode).u_locs.at("PlanetColor"), 1,
     glm::value_ptr(planet->m_color));
+
+  // planet number
+  glUniform1f(m_shaders.at(shadermode).u_locs.at("PlanetNumber"), GLfloat(number));
 
   // shader it
   glUniformMatrix4fv(m_shaders.at(shadermode).u_locs.at("ModelMatrix"),
@@ -197,7 +200,7 @@ void ApplicationSolar::upload_orbits(std::shared_ptr<planet> planet) const {
 
   // shader it
   glm::fmat4 moon_matrix{};
-  if (planet->m_moon) {
+  if (planet->m_name == "Mond") {
     // if moon, set moon orbit with rotation
     moon_matrix = glm::rotate(moon_matrix, float(glfwGetTime())*planet->m_rot_speed, glm::fvec3{0.0f, 1.0f, 0.0f});
     moon_matrix = glm::translate(moon_matrix, glm::fvec3{0.0f, 0.0f, planet->m_origin_dis});
@@ -278,7 +281,7 @@ void ApplicationSolar::render() const {
 
   // load planets
   for (unsigned int i = 1; i < all_planets.size(); ++i) {
-    upload_planet_transforms(all_planets[i], shadermode, all_texture_objects[i]);
+    upload_planet_transforms(all_planets[i], shadermode, all_texture_objects[i], float(i));
   }
 
   // bind shader to upload uniforms
@@ -499,6 +502,7 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.at("planet").u_locs["Texture"] = -1;
   m_shaders.at("planet").u_locs["TextureNight"] = -1;
   m_shaders.at("planet").u_locs["NormalMap"] = -1;
+  m_shaders.at("planet").u_locs["PlanetNumber"] = -1;
 
   m_shaders.at("star").u_locs["ViewMatrix"] = -1;
   m_shaders.at("star").u_locs["ProjectionMatrix"] = -1;
@@ -528,6 +532,7 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.at("cel").u_locs["PlanetColor"] = -1;
   m_shaders.at("cel").u_locs["NormalMatrix"] = -1;
   m_shaders.at("cel").u_locs["NormalMap"] = -1;
+  m_shaders.at("cel").u_locs["PlanetNumber"] = -1;
 }
 
 // generate stars
@@ -670,7 +675,7 @@ void ApplicationSolar::initializeSkybox() {
 
 void ApplicationSolar::initializeNormalMaps() {
   std::vector<pixel_data> normalMaps{};
-  pixel_data mercury = texture_loader::file(m_resource_path + "textures/" + "2k_earth_normal_map.png");
+  pixel_data mercury = texture_loader::file(m_resource_path + "textures/" + "2k_mercury_normal_map.png");
   normalMaps.push_back(mercury);
 
   glActiveTexture(GL_TEXTURE2);

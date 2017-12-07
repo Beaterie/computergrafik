@@ -27,7 +27,7 @@ class ApplicationSolar : public Application {
   void render() const;
 
   // upload planets
-  void upload_planet_transforms(std::shared_ptr<planet> planet, std::string shadermode, texture_object obj) const;
+  void upload_planet_transforms(std::shared_ptr<planet> planet, std::string shadermode, texture_object obj, float number) const;
   // upload sun
   void upload_sun(std::shared_ptr<planet> sun, std::string shadermode, texture_object obj) const;
   // upload orbits

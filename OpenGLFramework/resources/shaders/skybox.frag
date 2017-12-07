@@ -9,4 +9,5 @@ out vec4 out_Color;
 void main() {
     // export color    
     out_Color = texture(TextureSky, pass_TexCoord);
+    out_Color = vec4(0.0f);
 }

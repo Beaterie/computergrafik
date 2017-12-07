@@ -49,49 +49,40 @@ struct shader_program {
 
 struct planet {
   planet():
+  m_name{"default"},
   m_size{1.0f},
   m_rot_speed{1.0f},
   m_origin_dis{1.0f},
-  m_moon{false},
   m_intr_rot_speed{0.5f},
   m_color{0.0f,1.0f,0.0f}
   {}
 
-  planet(float size, float speed, float distance, glm::fvec3 color):
+  planet(std::string name, float size, float speed, float distance, glm::fvec3 color):
+  m_name{name},
   m_size{size},
   m_rot_speed{speed},
   m_origin_dis{distance},
-  m_moon{false},
   m_intr_rot_speed{0.5f},
   m_color{color}
   {}
 
-  planet(float size, float speed, float distance, bool moon, glm::fvec3 color):
+  planet(std::string name, float size, float speed, float distance, float selfrot, glm::fvec3 color):
+  m_name{name},
   m_size{size},
   m_rot_speed{speed},
   m_origin_dis{distance},
-  m_moon{moon},
-  m_intr_rot_speed{0.5f},
-  m_color{color}
-  {}
-
-  planet(float size, float speed, float distance, bool moon, float selfrot, glm::fvec3 color):
-  m_size{size},
-  m_rot_speed{speed},
-  m_origin_dis{distance},
-  m_moon{moon},
   m_intr_rot_speed{selfrot},
   m_color{color}
   {}
 
+  // planet name
+  std::string m_name;
   // size
   float m_size;
   // rotation speed
   float m_rot_speed;
   // distance to origin
   float m_origin_dis;
-  // if moon then 'true'
-  bool m_moon;
   // intrinsic rotation speed
   float m_intr_rot_speed;
   // planet color

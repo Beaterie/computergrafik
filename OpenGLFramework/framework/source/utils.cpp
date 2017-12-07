@@ -28,7 +28,7 @@ void print_bound_textures() {
   glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &texture_units);
 
   for(GLint i = 0; i < texture_units; ++i) {
-    glActiveTexture(GL_TEXTURE0 + i);
+    glActiveTexture(GL_TEXTURE0 + (unsigned int)i);
     glGetIntegerv(GL_TEXTURE_BINDING_3D, &id3);
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &id2);
     glGetIntegerv(GL_TEXTURE_BINDING_1D, &id1);
@@ -70,7 +70,7 @@ void validate_program(GLuint program) {
     GLint log_size = 0;
     glGetProgramiv(program, GL_INFO_LOG_LENGTH, &log_size);
     // get log
-    GLchar* log_buffer = (GLchar*)malloc(sizeof(GLchar) * log_size);
+    GLchar* log_buffer = (GLchar*)malloc(sizeof(GLchar) * (unsigned long)log_size);
     glGetProgramInfoLog(program, log_size, &log_size, log_buffer);
     // output errors
     output_log(log_buffer, "program nr. " + std::to_string(program));
