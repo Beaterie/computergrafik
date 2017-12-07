@@ -19,13 +19,8 @@ out vec4 out_Color;
 void main() {
 
   // normal mapping
-<<<<<<< HEAD
-  vec3 normal_Mapping = normalize(texture(NormalMap, pass_TexCoord).rgb * 2.0 - 1.0);//, texture(NormalMap, pass_TexCoord).b)));
-  vec3 bi_Tangent = (NormalMatrix * vec4(cross(pass_Normal.xyz, pass_Tangent),1.0)).xyz;
-=======
   vec3 normal_Mapping = vec3(texture(NormalMap, pass_TexCoord).rg * 2.0 - 1.0, texture(NormalMap, pass_TexCoord).b);
   vec3 bi_Tangent = cross(pass_Normal.xyz, pass_Tangent);
->>>>>>> 150d42463112c2bf43a1c497f0ab8e9cb76fe9b1
 
   mat3 TangentMatrix = mat3(pass_Tangent, bi_Tangent, pass_Normal.xyz);
 
@@ -39,17 +34,8 @@ void main() {
   vec3 l = normalize(new_SunPos - pass_Position.xyz);
   vec3 n = vec3(0.0);
 
-<<<<<<< HEAD
-  if (PlanetNumber == 1.0) {
-    n = normal_Mapping;
-    //v = TangentMatrix * v;
-    //l = TangentMatrix * l;
-    out_Color = vec4(normal_Mapping,1.0);
-    return;
-=======
   if (PlanetNumber == 4.0) {
     n = normalize(detailNormal);
->>>>>>> 150d42463112c2bf43a1c497f0ab8e9cb76fe9b1
   }
   else {
     n = normalize(pass_Normal.xyz);
