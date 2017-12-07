@@ -42,15 +42,15 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
   // planets
   // {name, size, speed_of_rotation, distance_to_origin, instrinct rotation, color}
   planet sonne{"Sonne",3.0f, 0.0f, 0.0f, 0.1f, {1.0f,0.75f,0.0f}};
-  planet merkur{"Merkur",log(4.9f)*0.1f, 87.0f*0.00005f, log(5.8f)*-2.5f, {0.5f,0.5f,0.5f}};
+  planet merkur{"Merkur",log(4.9f)*0.1f, 87.0f*0.00005f, log(5.8f)*2.5f, {0.5f,0.5f,0.5f}};
   planet venus{"Venus",log(12.0f)*0.1f, 200.0f*0.00005f, log(10.8f)*2.5f, {1.0f,0.9f,0.3f}};
   planet erde{"Erde",log(13.0f)*0.1f, 365.0f*0.00005f, log(15.0f)*2.5f, {0.05f,0.1f,1.0f}};
-  planet mars{"Mars",log(6.8f)*0.1f, 700.0f*0.00005f, log(22.8f)*-2.5f, {0.9f,0.5f,0.3f}};
+  planet mars{"Mars",log(6.8f)*0.1f, 700.0f*0.00005f, log(22.8f)*2.5f, {0.9f,0.5f,0.3f}};
   planet jupiter{"Jupiter",log(142.0f)*0.1f, 450.0f*0.00005f, log(77.8f)*2.5f, {0.8f,0.5f,0.3f}};
-  planet saturn{"Saturn",log(120.0f)*0.1f, 50.0f*0.00005f, log(190.0f)*-2.5f, {0.8f,0.8f,0.3f}};
+  planet saturn{"Saturn",log(120.0f)*0.1f, 50.0f*0.00005f, log(190.0f)*2.5f, {0.8f,0.8f,0.3f}};
   planet uranus{"Uranus",log(51.0f)*0.1f, 140.0f*0.00005f, log(435.0f)*2.5f, {0.6f,0.8f,1.0f}};
-  planet neptun{"Neptun",log(48.0f)*0.1f, 300.0f*0.00005f, log(1000.0f)*-2.5f, {0.0f,0.1f,0.8f}};
-  planet pluto{"Pluto",log(2.3f)*0.1f, 160.0f*0.00005f, log(6000.0f)*-2.5f, {0.8f,0.5f,0.4f}};
+  planet neptun{"Neptun",log(48.0f)*0.1f, 300.0f*0.00005f, log(1000.0f)*2.5f, {0.0f,0.1f,0.8f}};
+  planet pluto{"Pluto",log(2.3f)*0.1f, 160.0f*0.00005f, log(6000.0f)*2.5f, {0.8f,0.5f,0.4f}};
   planet mond{"Mond",log(3.4f)*0.1f, 365.0f*0.00005f, log(15.0f)*2.5f, {0.7f,0.7f,0.7f}};
   // planet pointer
   auto p_sonne    = std::make_shared<planet>(sonne);
