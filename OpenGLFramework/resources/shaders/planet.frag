@@ -45,8 +45,8 @@ void main() {
 
   // color vectors
   vec3 Color        = texture(Texture, pass_TexCoord).xyz;
-  vec3 ambientColor = Color * 0.05;
-  vec3 diffuseColor = Color * max(dot(n,l),0);
+  vec3 ambientColor = vec3(0.0);
+  vec3 diffuseColor = Color * max(dot(n,l), 0);
   vec3 specColor    = vec3(0.1);
 
   // Blinn-Phong power a
@@ -73,7 +73,7 @@ void main() {
   // export color with earth night texture
   if (PlanetNumber == 3.0) {
     out_Color = vec4( colorLinear + (
-      (1.0-lambertian) * texture(TextureNight, pass_TexCoord)
+        (1.0-lambertian) * texture(TextureNight, pass_TexCoord)
       ).xyz, 1.0 );
   }
 }

@@ -36,6 +36,7 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
   initializeShaderPrograms();
   initializeGeometry();
   initializeStars();
+  initializeFramebuffer();
   //glEnable(GL_TEXTURE_2D);
   //glEnable(GL_LIGHTING);
 
@@ -801,6 +802,75 @@ void ApplicationSolar::initializeOrbits() {
   orbit_object.draw_mode = GL_LINE_LOOP;
   orbit_object.num_elements = 360;
   //std::cout << "number of orbit_points: " << orbit_object.num_elements << std::endl;
+}
+
+void ApplicationSolar::initializeFramebuffer() {
+  //glClear(GL_COLOR_BUFFER_BIT);
+  //glClear(GL_DEPTH_BUFFER_BIT);
+
+  // ---------------------------- Texture OBJECT ----------------------------
+  texture_object texturebuff{};
+
+  // activate Texture Unit to which to bind texture 
+  glActiveTexture(GL_TEXTURE3);
+  // generate Texture Object
+  glGenTextures(1, &texturebuff.handle);
+  // bind Texture Object to 2d texture binding point of unit
+  glBindTexture(GL_TEXTURE_2D, texturebuff.handle);
+
+
+  // ---------------------------- Renderbuffer OBJECT ----------------------------
+  texture_object renderbuff{};
+
+  // generate Renderbuffer Object
+  glGenRenderbuffers(1, &renderbuff.handle);
+  // bind RBO for formatting
+  glBindRenderbuffer(GL_RENDERBUFFER, renderbuff.handle);
+  // specify RBO properties:
+  //  - format, e.g. GL_DEPTH_COMPONENT24
+  //  - horizontal resolution
+  //  - vertical resolution
+  glRenderbufferStorage(GL_RENDERBUFFER,
+    GL_DEPTH_COMPONENT24,
+    1000u,
+    750u);
+
+
+  // ---------------------------- Framebuffer OBJECT ----------------------------
+  texture_object framebuff{};
+
+  // generate Frame Buffer Object
+  glGenFramebuffers(1, &framebuff.handle);
+  // bind FBO for configuration
+  glBindFramebuffer(GL_FRAMEBUFFER, framebuff.handle);
+  // specify Texture Object attachments
+  //  - to color or depth attachment
+  //  - texture handle
+  //  - highest level of texture (no mipmap)
+  glFramebufferTexture(GL_FRAMEBUFFER,
+    GL_COLOR_ATTACHMENT0,
+    texturebuff.handle,
+    0);
+  // specify Renderbuffer Object attachments
+  //  - to depth or stencil attachment
+  //  - value must be GL_RENDERBUFFER
+  //  - handle of RBO
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER,
+    GL_DEPTH_ATTACHMENT,
+    GL_RENDERBUFFER,
+    renderbuff.handle);
+
+  // create array containing enums representing color attachments
+  GLenum draw_buffers[1] = {GL_COLOR_ATTACHMENT0};
+  // set these color attachments to receive fragments
+  glDrawBuffers(1, draw_buffers);
+
+  // get the FBO status
+  GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+  // compare return value with the valid status value
+  if (status != GL_FRAMEBUFFER_COMPLETE) {
+    std::cout << "ERROR :)" << std::endl;
+  }
 }
 
 ApplicationSolar::~ApplicationSolar() {

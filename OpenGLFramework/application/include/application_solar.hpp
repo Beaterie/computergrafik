@@ -44,6 +44,7 @@ class ApplicationSolar : public Application {
   void initializeTextures(unsigned int num, unsigned int unit_num);
   void initializeStars();
   void initializeOrbits();
+  void initializeFramebuffer();
   void updateView();
 
   // cpu representation of model
