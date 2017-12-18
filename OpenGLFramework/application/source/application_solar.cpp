@@ -493,6 +493,9 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.emplace("sun_cel", shader_program{m_resource_path + "shaders/sun_cel.vert",
                                            m_resource_path + "shaders/sun_cel.frag"});
 
+  m_shaders.emplace("screenquad", shader_program{m_resource_path + "shaders/screenquad.vert",
+                                           m_resource_path + "shaders/screenquad.frag"});
+
   // request uniform locations for shader program
   m_shaders.at("skybox").u_locs["ProjectionMatrix"] = -1;
   m_shaders.at("skybox").u_locs["ViewMatrix"] = -1;
@@ -538,6 +541,8 @@ void ApplicationSolar::initializeShaderPrograms() {
   //m_shaders.at("cel").u_locs["NormalMatrix"] = -1;
   //m_shaders.at("cel").u_locs["NormalMap"] = -1;
   m_shaders.at("cel").u_locs["PlanetNumber"] = -1;
+
+  m_shaders.at("screenquad").u_locs["PosC"] = -1;
 }
 
 // generate stars
@@ -750,6 +755,55 @@ void ApplicationSolar::initializeTextures(unsigned int num, unsigned int unit_nu
                GLsizei(pixData.height),0,pixData.channels,pixData.channel_type,pixData.ptr());
 }
 
+void ApplicationSolar::initializeScreenQuad() {
+
+  screen_edges.insert(std::end(screen_edges), {
+      -1.0,-1.0,0.0, 0.0,0.0,
+      1.0,-1.0,0.0,  1.0,0.0,
+      1.0,1.0,0.0,   1.0,1.0,
+      -1.0,1.0,0.0,  0.0,1.0
+    });
+
+  model screen_quad_model = model{screen_edges, (model::TEXCOORD | model::POSITION), {1}};
+
+  // generate vertex array object
+  glGenVertexArrays(1, &screen_quad_object.vertex_AO);
+  // bind the array for attaching buffers
+  glBindVertexArray(screen_quad_object.vertex_AO);
+
+  // generate generic buffer
+  glGenBuffers(1, &screen_quad_object.vertex_BO);
+  // bind this as an vertex array buffer containing all attributes
+  glBindBuffer(GL_ARRAY_BUFFER, screen_quad_object.vertex_BO);
+  // configure currently bound array buffer
+  glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(sizeof(float) * screen_quad_model.data.size()), screen_quad_model.data.data(), GL_STATIC_DRAW);
+
+  // activate first attribute on gpu
+  glEnableVertexAttribArray(0);
+  // first attribute is 3 floats with no offset & stride
+  glVertexAttribPointer(0, // index
+  3, // number of components
+  GL_FLOAT, // datatype
+  GL_FALSE, // normalize?
+  5 * sizeof(float), // stride
+  0); // offset
+
+  // activate first attribute on gpu
+  glEnableVertexAttribArray(1);
+  // second attribute is 3 floats with offset & stride
+  glVertexAttribPointer(1, // index
+  2, // number of components
+  GL_FLOAT, // datatype
+  GL_FALSE, // normalize?
+  5 * sizeof(float), // stride
+  (void*) (3 * sizeof(float))); // offset
+  
+ 
+  screen_quad_object.draw_mode = GL_TRIANGLE_STRIP;
+  screen_quad_object.num_elements = GLsizei(4);
+  
+}
+
 // generate orbits
 void ApplicationSolar::initializeOrbits() {
 
@@ -809,8 +863,7 @@ void ApplicationSolar::initializeFramebuffer() {
   //glClear(GL_DEPTH_BUFFER_BIT);
 
   // ---------------------------- Texture OBJECT ----------------------------
-  texture_object texturebuff{};
-
+  
   // activate Texture Unit to which to bind texture 
   glActiveTexture(GL_TEXTURE3);
   // generate Texture Object
@@ -818,10 +871,14 @@ void ApplicationSolar::initializeFramebuffer() {
   // bind Texture Object to 2d texture binding point of unit
   glBindTexture(GL_TEXTURE_2D, texturebuff.handle);
 
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  glTexImage2D(GL_TEXTURE_2D,0,GL_RGB,GLsizei(1000u),GLsizei(750u),0,GL_RGB,GL_UNSIGNED_BYTE,NULL);
+
 
   // ---------------------------- Renderbuffer OBJECT ----------------------------
-  texture_object renderbuff{};
-
+ 
   // generate Renderbuffer Object
   glGenRenderbuffers(1, &renderbuff.handle);
   // bind RBO for formatting
@@ -837,7 +894,6 @@ void ApplicationSolar::initializeFramebuffer() {
 
 
   // ---------------------------- Framebuffer OBJECT ----------------------------
-  texture_object framebuff{};
 
   // generate Frame Buffer Object
   glGenFramebuffers(1, &framebuff.handle);
@@ -869,7 +925,9 @@ void ApplicationSolar::initializeFramebuffer() {
   GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
   // compare return value with the valid status value
   if (status != GL_FRAMEBUFFER_COMPLETE) {
-    std::cout << "ERROR :)" << std::endl;
+    std::cout << "ERROR :)" << status << std::endl;
+  } else {
+    std::cout << status << std::endl;
   }
 }
 

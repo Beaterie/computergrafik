@@ -45,6 +45,7 @@ class ApplicationSolar : public Application {
   void initializeStars();
   void initializeOrbits();
   void initializeFramebuffer();
+  void initializeScreenQuad();
   void updateView();
 
   // cpu representation of model
@@ -52,16 +53,21 @@ class ApplicationSolar : public Application {
   model_object star_object{};
   model_object orbit_object{};
   model_object skybox_object{};
+  model_object screen_quad_object{};
 
   // vectors with content
   std::vector<std::shared_ptr<planet>> all_planets;
   std::vector<float> all_stars;
   std::vector<float> all_orbits;
+  std::vector<float> screen_edges;
   std::string all_textures[13] = {"4k_sun.png", "2k_mercury.png", "2k_venus.png",
     "2k_earth.png", "2k_mars.png", "2k_jupiter.png", "2k_saturn.png", "2k_uranus.png",
     "2k_neptune.png", "1k_pluto.png", "2k_moon.png", "2k_earth_nightmap.png", "skybox.png"};
   texture_object all_texture_objects[13] = {};
   texture_object normaltex_obj{};
+  texture_object texturebuff{};
+  texture_object renderbuff{};
+  texture_object framebuff{};
   
   // navigator keys
   float press_W = 0.0f;
