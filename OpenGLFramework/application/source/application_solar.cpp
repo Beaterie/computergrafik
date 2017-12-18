@@ -542,7 +542,9 @@ void ApplicationSolar::initializeShaderPrograms() {
   //m_shaders.at("cel").u_locs["NormalMap"] = -1;
   m_shaders.at("cel").u_locs["PlanetNumber"] = -1;
 
-  m_shaders.at("screenquad").u_locs["PosC"] = -1;
+  m_shaders.at("screenquad").u_locs["blur"] = -1;
+  m_shaders.at("screenquad").u_locs["greyscale"] = -1;
+  m_shaders.at("screenquad").u_locs["ColorTexture"] = -1;
 }
 
 // generate stars
