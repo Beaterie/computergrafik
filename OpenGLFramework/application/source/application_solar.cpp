@@ -69,7 +69,6 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
   all_planets.insert(std::end(all_planets),{p_sonne, p_merkur, p_venus,
     p_erde, p_mars, p_jupiter, p_saturn, p_uranus, p_neptun, p_pluto, p_mond});
 
-  //initializeTextures(12, 0);
   // initialize textures and bind to texture objects
   for (unsigned int i = 0; i < (sizeof(all_textures)/sizeof(*all_textures)-2); ++i) {
     initializeTextures(i, 0);
@@ -219,7 +218,8 @@ void ApplicationSolar::upload_orbits(std::shared_ptr<planet> planet) const {
 }
 
 void ApplicationSolar::render() const {
-
+  glBindFramebuffer(GL_FRAMEBUFFER, framebuff.handle);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   std::string shadermode = "";
 
   // load skybox
@@ -283,6 +283,7 @@ void ApplicationSolar::render() const {
   }
 
   // load screen quad
+  glBindVertexArray(0);
   upload_screenquad();
 }
 
@@ -439,8 +440,16 @@ void ApplicationSolar::keyCallback(int key, int scancode, int action, int mods) 
       celshading = true;
       std::cout << "Cel shader activated.\n";
     }
+    // press key 6 for standard framebuffer
+    else if (key == GLFW_KEY_6) {
+      greyscale = false;
+      std::cout << "Normal framebuffer activated.\n";
+    }
     // press key 7 for luminance preserving greyscale image
     else if (key == GLFW_KEY_7) {
+      greyscale = true;
+      glUseProgram(m_shaders.at("screenquad").handle);
+      glUniform1i(m_shaders.at("screenquad").u_locs.at("MisterGrey"), greyscale);
       std::cout << "Greyscale activated.\n";
     }
   }
@@ -464,6 +473,7 @@ void ApplicationSolar::upload_screenquad() const {
   glActiveTexture(GL_TEXTURE3);
   glBindTexture(GL_TEXTURE_2D, framebuff.handle);
   glUniform1i(glGetUniformLocation(m_shaders.at("screenquad").handle, "QuadTex"), GLint(3));
+
   glBindVertexArray(screen_quad_object.vertex_AO);
 
   // draw 
@@ -533,7 +543,6 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.at("sun_cel").u_locs["ProjectionMatrix"] = -1;
   m_shaders.at("sun_cel").u_locs["SunPosition"] = -1;
 
-  //m_shaders.at("cel").u_locs["NormalMatrix"] = -1;
   m_shaders.at("cel").u_locs["ModelMatrix"] = -1;
   m_shaders.at("cel").u_locs["ViewMatrix"] = -1;
   m_shaders.at("cel").u_locs["ProjectionMatrix"] = -1;
@@ -543,9 +552,9 @@ void ApplicationSolar::initializeShaderPrograms() {
   //m_shaders.at("cel").u_locs["NormalMap"] = -1;
   m_shaders.at("cel").u_locs["PlanetNumber"] = -1;
 
-  m_shaders.at("screenquad").u_locs["blur"] = -1;
-  m_shaders.at("screenquad").u_locs["greyscale"] = -1;
+  //m_shaders.at("screenquad").u_locs["blur"] = -1;
   m_shaders.at("screenquad").u_locs["QuadTex"] = -1;
+  m_shaders.at("screenquad").u_locs["MisterGrey"] = -1;
 }
 
 // generate stars
@@ -791,7 +800,7 @@ void ApplicationSolar::initializeScreenQuad() {
   5 * sizeof(float), // stride
   0); // offset
 
-  // activate first attribute on gpu
+  // activate second attribute on gpu
   glEnableVertexAttribArray(1);
   // second attribute is 3 floats with offset & stride
   glVertexAttribPointer(1, // index
@@ -822,8 +831,6 @@ void ApplicationSolar::initializeOrbits() {
     all_orbits.insert(std::end(all_orbits), {x,y,z});
   }
   
-  //std::cout << "number of floats: " << all_orbits.size() << std::endl;
-
   // generate vertex array object
   glGenVertexArrays(1, &orbit_object.vertex_AO);
   // bind the array for attaching buffers
@@ -846,19 +853,8 @@ void ApplicationSolar::initializeOrbits() {
   3 * sizeof(float), // stride
   0); // offset
 
-  // activate second attribute on gpu
-  //glEnableVertexAttribArray(1);
-  // second attribute is 3 floats with no offset & stride
-  /*glVertexAttribPointer(1, // index
-  3, // number of components
-  GL_FLOAT, // datatype
-  GL_FALSE, // normalize?
-  6 * sizeof(float), // stride
-  (void*) (3 * sizeof(float))); // offset*/
-
   orbit_object.draw_mode = GL_LINE_LOOP;
   orbit_object.num_elements = 360;
-  //std::cout << "number of orbit_points: " << orbit_object.num_elements << std::endl;
 }
 
 void ApplicationSolar::initializeFramebuffer() {
@@ -877,7 +873,8 @@ void ApplicationSolar::initializeFramebuffer() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  glTexImage2D(GL_TEXTURE_2D,0,GL_RGB,GLsizei(1000u),GLsizei(750u),0,GL_RGB,GL_UNSIGNED_BYTE,NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, GLsizei(1000u), GLsizei(750u),
+    0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
 
   // ---------------------------- Renderbuffer OBJECT ----------------------------
@@ -892,8 +889,8 @@ void ApplicationSolar::initializeFramebuffer() {
   //  - vertical resolution
   glRenderbufferStorage(GL_RENDERBUFFER,
     GL_DEPTH_COMPONENT24,
-    1000u,
-    750u);
+    GLsizei(1000u),
+    GLsizei(750u));
 
 
   // ---------------------------- Framebuffer OBJECT ----------------------------
@@ -907,7 +904,7 @@ void ApplicationSolar::initializeFramebuffer() {
   //  - texture handle
   //  - highest level of texture (no mipmap)
   glFramebufferTexture(GL_FRAMEBUFFER,
-    GL_COLOR_ATTACHMENT0,
+    GL_COLOR_ATTACHMENT1,
     texturebuff.handle,
     0);
   // specify Renderbuffer Object attachments
@@ -920,7 +917,7 @@ void ApplicationSolar::initializeFramebuffer() {
     renderbuff.handle);
 
   // create array containing enums representing color attachments
-  GLenum draw_buffers[1] = {GL_COLOR_ATTACHMENT0};
+  GLenum draw_buffers[1] = {GL_COLOR_ATTACHMENT1};
   // set these color attachments to receive fragments
   glDrawBuffers(1, draw_buffers);
 
@@ -928,9 +925,9 @@ void ApplicationSolar::initializeFramebuffer() {
   GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
   // compare return value with the valid status value
   if (status != GL_FRAMEBUFFER_COMPLETE) {
-    std::cout << "ERROR :)" << status << std::endl;
+    std::cout << "ERROR :(" << status << std::endl;
   } else {
-    std::cout << status << std::endl;
+    std::cout << "Cool :)" << status << std::endl;
   }
 }
 

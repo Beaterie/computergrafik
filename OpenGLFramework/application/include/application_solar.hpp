@@ -81,6 +81,7 @@ class ApplicationSolar : public Application {
 
   // cel-shading key
   bool celshading = false;
+  bool greyscale = false;
 };
 
 #endif
