@@ -772,8 +772,8 @@ void ApplicationSolar::initializeScreenQuad() {
   screen_edges.insert(std::end(screen_edges), {
       -1.0,-1.0,0.0, 0.0,0.0,
       1.0,-1.0,0.0,  1.0,0.0,
-      1.0,1.0,0.0,   1.0,1.0,
-      -1.0,1.0,0.0,  0.0,1.0
+      -1.0,1.0,0.0,   0.0,1.0,
+      1.0,1.0,0.0,  1.0,1.0
     });
 
   model screen_quad_model = model{screen_edges, (model::TEXCOORD | model::POSITION), {1}};
@@ -904,7 +904,7 @@ void ApplicationSolar::initializeFramebuffer() {
   //  - texture handle
   //  - highest level of texture (no mipmap)
   glFramebufferTexture(GL_FRAMEBUFFER,
-    GL_COLOR_ATTACHMENT1,
+    GL_COLOR_ATTACHMENT0,
     texturebuff.handle,
     0);
   // specify Renderbuffer Object attachments
@@ -917,7 +917,7 @@ void ApplicationSolar::initializeFramebuffer() {
     renderbuff.handle);
 
   // create array containing enums representing color attachments
-  GLenum draw_buffers[1] = {GL_COLOR_ATTACHMENT1};
+  GLenum draw_buffers[1] = {GL_COLOR_ATTACHMENT0};
   // set these color attachments to receive fragments
   glDrawBuffers(1, draw_buffers);
 
