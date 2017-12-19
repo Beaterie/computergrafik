@@ -14,6 +14,5 @@ void main() {
     vec3 c2 = vec3(0.3,0.59,0.11);
     float g = dot(c1,c2);
     out_uv = vec4(g,g,g,1.0);
-  }
-  //out_uv = vec4(0.5,0.5,0.5,1.0);
+  } 
 }

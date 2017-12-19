@@ -32,11 +32,7 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glDisable(GL_CULL_FACE);
   
-  initializeSkybox();
-  initializeShaderPrograms();
-  initializeGeometry();
-  initializeStars();
-  initializeFramebuffer();
+
   //glEnable(GL_TEXTURE_2D);
   //glEnable(GL_LIGHTING);
 
@@ -69,6 +65,15 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
   all_planets.insert(std::end(all_planets),{p_sonne, p_merkur, p_venus,
     p_erde, p_mars, p_jupiter, p_saturn, p_uranus, p_neptun, p_pluto, p_mond});
 
+  initializeOrbits();
+  initializeScreenQuad();
+  initializeFramebuffer();
+
+  initializeSkybox();
+  initializeShaderPrograms();
+  initializeGeometry();
+  initializeStars();
+
   // initialize textures and bind to texture objects
   for (unsigned int i = 0; i < (sizeof(all_textures)/sizeof(*all_textures)-2); ++i) {
     initializeTextures(i, 0);
@@ -77,9 +82,7 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
   initializeSkyboxTex();
   initializeTextures(11, 1);
   initializeNormalMaps();
-
-  initializeOrbits();
-
+  
   std::cout << "Realistic shader activated.\n";
 }
 
@@ -443,6 +446,8 @@ void ApplicationSolar::keyCallback(int key, int scancode, int action, int mods) 
     // press key 6 for standard framebuffer
     else if (key == GLFW_KEY_6) {
       greyscale = false;
+      glUseProgram(m_shaders.at("screenquad").handle);
+      glUniform1i(m_shaders.at("screenquad").u_locs.at("MisterGrey"), greyscale);
       std::cout << "Normal framebuffer activated.\n";
     }
     // press key 7 for luminance preserving greyscale image
