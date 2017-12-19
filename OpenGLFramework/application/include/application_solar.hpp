@@ -79,9 +79,12 @@ class ApplicationSolar : public Application {
   float press_E = 0.0f;
   float press_SPACE = 0.0f;
 
-  // cel-shading key
+  // keys for modes
   bool celshading = false;
   bool greyscale = false;
+  bool verMirror = false;
+  bool horMirror = false;
+  bool blur = false;
 };
 
 #endif

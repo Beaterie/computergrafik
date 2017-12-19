@@ -446,16 +446,43 @@ void ApplicationSolar::keyCallback(int key, int scancode, int action, int mods) 
     // press key 6 for standard framebuffer
     else if (key == GLFW_KEY_6) {
       greyscale = false;
+      horMirror = false;      
+      verMirror = false;
+      blur = false;
       glUseProgram(m_shaders.at("screenquad").handle);
       glUniform1i(m_shaders.at("screenquad").u_locs.at("MisterGrey"), greyscale);
-      std::cout << "Normal framebuffer activated.\n";
+      glUniform1i(m_shaders.at("screenquad").u_locs.at("HorMirror"), horMirror);
+      glUniform1i(m_shaders.at("screenquad").u_locs.at("VerMirror"), verMirror);
+      glUniform1i(m_shaders.at("screenquad").u_locs.at("GaussBlur"), blur);
+      std::cout << "Normal framebuffer activated. Effects removed.\n";
     }
     // press key 7 for luminance preserving greyscale image
     else if (key == GLFW_KEY_7) {
-      greyscale = true;
+      greyscale = !greyscale;
       glUseProgram(m_shaders.at("screenquad").handle);
       glUniform1i(m_shaders.at("screenquad").u_locs.at("MisterGrey"), greyscale);
-      std::cout << "Greyscale activated.\n";
+      std::cout << "Greyscale activated.\n" << greyscale << "\n";
+    }
+    // press key 8 for horizontally mirrored image
+    else if (key == GLFW_KEY_8) {
+      horMirror = !horMirror;
+      glUseProgram(m_shaders.at("screenquad").handle);
+      glUniform1i(m_shaders.at("screenquad").u_locs.at("HorMirror"), horMirror);
+      std::cout << "Horizontally mirrored.\n" << horMirror << "\n";
+    }
+    // press key 9 for vertically mirrored image
+    else if (key == GLFW_KEY_9) {
+      verMirror = !verMirror;
+      glUseProgram(m_shaders.at("screenquad").handle);
+      glUniform1i(m_shaders.at("screenquad").u_locs.at("VerMirror"), verMirror);
+      std::cout << "Vertically mirrored.\n" << verMirror << "\n";
+    }
+    // press key 0 for blurred image with 3*3 gaussian kernel
+    else if (key == GLFW_KEY_0) {
+      blur = !blur;
+      glUseProgram(m_shaders.at("screenquad").handle);
+      glUniform1i(m_shaders.at("screenquad").u_locs.at("GaussBlur"), blur);
+      std::cout << "Gaussian blur activated.\n" << blur << "\n";
     }
   }
 }
@@ -553,13 +580,14 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.at("cel").u_locs["ProjectionMatrix"] = -1;
   m_shaders.at("cel").u_locs["SunPosition"] = -1;
   m_shaders.at("cel").u_locs["PlanetColor"] = -1;
-  //m_shaders.at("cel").u_locs["NormalMatrix"] = -1;
-  //m_shaders.at("cel").u_locs["NormalMap"] = -1;
   m_shaders.at("cel").u_locs["PlanetNumber"] = -1;
 
   //m_shaders.at("screenquad").u_locs["blur"] = -1;
   m_shaders.at("screenquad").u_locs["QuadTex"] = -1;
   m_shaders.at("screenquad").u_locs["MisterGrey"] = -1;
+  m_shaders.at("screenquad").u_locs["HorMirror"] = -1;
+  m_shaders.at("screenquad").u_locs["VerMirror"] = -1;
+  m_shaders.at("screenquad").u_locs["GaussBlur"] = -1;
 }
 
 // generate stars
