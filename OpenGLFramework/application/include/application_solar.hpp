@@ -33,7 +33,9 @@ class ApplicationSolar : public Application {
   // upload orbits
   void upload_orbits(std::shared_ptr<planet> planet) const;
   // upload skybox
-  void upload_skybox(texture_object obj) const;
+  void upload_skybox() const;
+  // upload screen quad
+  void upload_screenquad() const;
 
  protected:
   void initializeShaderPrograms();

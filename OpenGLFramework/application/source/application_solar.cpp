@@ -177,22 +177,18 @@ void ApplicationSolar::upload_sun(std::shared_ptr<planet> sun, std::string shade
   glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
 }
 
-void ApplicationSolar::upload_skybox(texture_object obj) const {
-
-  // remove depth
+void ApplicationSolar::upload_skybox() const {
+  // deactivate depth
   glDepthMask(GL_FALSE);
 
-  // activate texture
+  glUseProgram(m_shaders.at("skybox").handle);
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_CUBE_MAP, obj.handle);
-  glBindVertexArray(skybox_object.vertex_AO);
-  // get location of sampler uniform
+  // bind Texture Object to 2d texture binding point of unit
+  glBindTexture(GL_TEXTURE_CUBE_MAP, all_texture_objects[12].handle);
   glUniform1i(glGetUniformLocation(m_shaders.at("skybox").handle, "TextureSky"), GLint(0));
+  glBindVertexArray(skybox_object.vertex_AO);
 
-  // draw 
-  glDrawArrays(GL_TRIANGLES, 0, 36);
-
-  // reactive depth
+  glDrawElements(skybox_object.draw_mode, skybox_object.num_elements, model::INDEX.type, NULL);
   glDepthMask(GL_TRUE);
 }
 
@@ -226,25 +222,8 @@ void ApplicationSolar::render() const {
 
   std::string shadermode = "";
 
-  glDepthMask(GL_FALSE);
-  glUseProgram(m_shaders.at("skybox").handle);
-  glActiveTexture(GL_TEXTURE0);
-  // bind Texture Object to 2d texture binding point of unit
-  glBindTexture(GL_TEXTURE_CUBE_MAP, all_texture_objects[12].handle);
-  glUniform1i(glGetUniformLocation(m_shaders.at("skybox").handle, "TextureSky"), GLint(0));
-  glBindVertexArray(skybox_object.vertex_AO);
-
-  //glEnable(GL_CULL_FACE);
-  //glCullFace(GL_FRONT);
-  //glDisable(GL_DEPTH_TEST);
-  glDrawElements(skybox_object.draw_mode, skybox_object.num_elements, model::INDEX.type, NULL);
-  //glEnable(GL_DEPTH_TEST);
-  glDepthMask(GL_TRUE);
-
-  // bind shader to upload uniforms
-  //glUseProgram(m_shaders.at("skybox").handle);
   // load skybox
-  //upload_skybox(all_texture_objects[12]);
+  upload_skybox();
 
   // check which shader should be used (realistic or cel shader)
   if (celshading) {
@@ -289,6 +268,7 @@ void ApplicationSolar::render() const {
   glBindTexture(GL_TEXTURE_2D, normaltex_obj.handle);
   glUniform1i(glGetUniformLocation(m_shaders.at(shadermode).handle, "NormalMap"), GLint(2));
 
+  // load stars
   // bind shader to upload uniforms
   glUseProgram(m_shaders.at("star").handle);
   // bind the VAO to draw
@@ -296,12 +276,14 @@ void ApplicationSolar::render() const {
   // draw bound vertex array using bound shader
   glDrawArrays(star_object.draw_mode, 0, star_object.num_elements);
 
-  // bind shader to upload uniforms
-  glUseProgram(m_shaders.at("orbit").handle);
   // load orbits
+  glUseProgram(m_shaders.at("orbit").handle);
   for (unsigned int i = 0; i < all_planets.size(); ++i) {
     upload_orbits(all_planets[i]);
   }
+
+  // load screen quad
+  upload_screenquad();
 }
 
 void ApplicationSolar::updateView() {
@@ -457,6 +439,10 @@ void ApplicationSolar::keyCallback(int key, int scancode, int action, int mods) 
       celshading = true;
       std::cout << "Cel shader activated.\n";
     }
+    // press key 7 for luminance preserving greyscale image
+    else if (key == GLFW_KEY_7) {
+      std::cout << "Greyscale activated.\n";
+    }
   }
 }
 
@@ -467,6 +453,21 @@ void ApplicationSolar::mouseCallback(double pos_x, double pos_y) {
   m_view_transform = glm::rotate(m_view_transform, float(pos_y)*0.01f, glm::fvec3{1.0f,0.0f,0.0f});
 
   updateView();
+}
+
+void ApplicationSolar::upload_screenquad() const {
+  // bind to the default framebuffer
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  glUseProgram(m_shaders.at("screenquad").handle);
+  // bind texture to shader
+  glActiveTexture(GL_TEXTURE3);
+  glBindTexture(GL_TEXTURE_2D, framebuff.handle);
+  glUniform1i(glGetUniformLocation(m_shaders.at("screenquad").handle, "QuadTex"), GLint(3));
+  glBindVertexArray(screen_quad_object.vertex_AO);
+
+  // draw 
+  glDrawArrays(screen_quad_object.draw_mode, NULL, screen_quad_object.num_elements);
 }
 
 // load shader programs
@@ -544,7 +545,7 @@ void ApplicationSolar::initializeShaderPrograms() {
 
   m_shaders.at("screenquad").u_locs["blur"] = -1;
   m_shaders.at("screenquad").u_locs["greyscale"] = -1;
-  m_shaders.at("screenquad").u_locs["ColorTexture"] = -1;
+  m_shaders.at("screenquad").u_locs["QuadTex"] = -1;
 }
 
 // generate stars
