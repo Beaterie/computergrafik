@@ -25,8 +25,10 @@ Application::~Application() {
   }
 }
 
-void Application::setProjection(glm::fmat4 const& projection_mat) {
+void Application::setProjection(glm::fmat4 const& projection_mat, int width, int height) {
   m_view_projection = projection_mat;
+  m_width = width;
+  m_height = height;
   updateProjection();
 }
 
