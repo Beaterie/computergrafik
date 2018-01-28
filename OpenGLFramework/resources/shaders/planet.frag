@@ -47,7 +47,7 @@ void main() {
   vec3 Color        = texture(Texture, pass_TexCoord).xyz;
   vec3 ambientColor = vec3(0.0);
   vec3 diffuseColor = Color * max(dot(n,l), 0);
-  vec3 specColor    = vec3(0.5);
+  vec3 specColor    = vec3(0.4);
 
   // Blinn-Phong power a
   float shininess   = 25;
