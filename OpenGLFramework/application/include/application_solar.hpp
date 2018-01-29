@@ -36,6 +36,8 @@ class ApplicationSolar : public Application {
   void upload_skybox() const;
   // upload screen quad
   void upload_screenquad() const;
+  // upload light frame buffer
+  void upload_lightframebuffer() const;
 
  protected:
   void initializeShaderPrograms();
