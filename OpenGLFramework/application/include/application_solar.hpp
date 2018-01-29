@@ -46,6 +46,7 @@ class ApplicationSolar : public Application {
   void initializeTextures(unsigned int num, unsigned int unit_num);
   void initializeStars();
   void initializeOrbits();
+  void initializeLightFramebuffer();
   void initializeFramebuffer();
   void initializeScreenQuad();
   void updateView();
@@ -70,6 +71,11 @@ class ApplicationSolar : public Application {
   texture_object texturebuff{};
   texture_object renderbuff{};
   texture_object framebuff{};
+
+  texture_object light_framebuff{};
+  texture_object light_texturebuff{};
+  texture_object light_renderbuff{};
+
   
   // navigator keys
   float press_W = 0.0f;
