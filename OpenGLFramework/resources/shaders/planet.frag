@@ -47,10 +47,10 @@ void main() {
   vec3 Color        = texture(Texture, pass_TexCoord).xyz;
   vec3 ambientColor = vec3(0.0);
   vec3 diffuseColor = Color * max(dot(n,l), 0);
-  vec3 specColor    = vec3(0.4);
+  vec3 specColor    = vec3(0.1);
 
   // Blinn-Phong power a
-  float shininess   = 25;
+  float shininess   = 2;
   // angle
   float lambertian = clamp(dot(l,n), 0.0, 1.0);
   // specular multiplier
@@ -58,7 +58,7 @@ void main() {
 
   // specular lighting
   if (lambertian > 0.0) {
-    float specAngle = clamp(dot(n,h), 0.0, 1.0);
+    float specAngle = clamp(dot(h,n), 0.0, 1.0);
     specular = pow(specAngle, shininess);
   }
 
