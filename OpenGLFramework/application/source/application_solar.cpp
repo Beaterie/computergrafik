@@ -354,17 +354,6 @@ void ApplicationSolar::updateProjection() {
   glUniformMatrix4fv(m_shaders.at("cel").u_locs.at("ProjectionMatrix"),
                      1, GL_FALSE, glm::value_ptr(m_view_projection));
 
-  // bind Texture Object to 2d texture binding point of unit
-  glBindTexture(GL_TEXTURE_2D, texturebuff.handle);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, GLsizei(m_width), GLsizei(m_height),
-    0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-
-  // bind RBO for formatting
-  glBindRenderbuffer(GL_RENDERBUFFER, renderbuff.handle);
-  glRenderbufferStorage(GL_RENDERBUFFER,
-    GL_DEPTH_COMPONENT24,
-    GLsizei(m_width),
-    GLsizei(m_height));
 }
 
 // update uniform locations
