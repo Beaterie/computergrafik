@@ -18,7 +18,7 @@ void main() {
 	int NUM_SAMPLES = 500;
 	float Density = 5.0f;
 	float Weight = 0.55f;
-	float Exposure = 0.2f;
+	float Exposure = 0.15f;
 	float Decay = 0.9f;
 
 	vec2 texCoord = pass_uv;
@@ -48,8 +48,6 @@ void main() {
    //return float4( color * Exposure, 1);
 
 
-
-
 	out_uv = texture(QuadTex, pass_uv);
-	out_uv = vec4(color * Exposure,1);
+	out_uv = out_uv + vec4(color * Exposure,0);
 }
