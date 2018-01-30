@@ -25,7 +25,6 @@ using namespace gl;
 
 
 ApplicationSolar::ApplicationSolar(std::string const& resource_path):Application{resource_path} {
-
   // enable transparency
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -66,7 +65,7 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path):Application
 
   initializeOrbits();
   initializeScreenQuad();
-  initializeFramebuffer();
+  //initializeFramebuffer();
   initializeLightFramebuffer();
 
   initializeSkybox();
@@ -381,6 +380,9 @@ void ApplicationSolar::updateView() {
   glUseProgram(m_shaders.at("black").handle);
   glUniformMatrix4fv(m_shaders.at("black").u_locs.at("ViewMatrix"),
       1, GL_FALSE, glm::value_ptr(view_matrix));
+      glUseProgram(m_shaders.at("god").handle);
+      glUniformMatrix4fv(m_shaders.at("god").u_locs.at("ViewMatrix"),
+          1, GL_FALSE, glm::value_ptr(view_matrix));
 }
 
 void ApplicationSolar::updateProjection() {
@@ -418,6 +420,9 @@ void ApplicationSolar::updateProjection() {
   glUseProgram(m_shaders.at("black").handle);
   glUniformMatrix4fv(m_shaders.at("black").u_locs.at("ProjectionMatrix"),
                      1, GL_FALSE, glm::value_ptr(m_view_projection));
+                     glUseProgram(m_shaders.at("god").handle);
+                     glUniformMatrix4fv(m_shaders.at("god").u_locs.at("ProjectionMatrix"),
+                                        1, GL_FALSE, glm::value_ptr(m_view_projection));
 }
 
 // update uniform locations
@@ -565,11 +570,11 @@ void ApplicationSolar::upload_lightframebuffer() const {
   // bind to the default framebuffer
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   
-    glUseProgram(m_shaders.at("screenquad").handle);
+    glUseProgram(m_shaders.at("god").handle);
     // bind texture to shader
     glActiveTexture(GL_TEXTURE4);
     glBindTexture(GL_TEXTURE_2D, light_framebuff.handle);
-    glUniform1i(glGetUniformLocation(m_shaders.at("screenquad").handle, "QuadTex"), GLint(4));
+    glUniform1i(glGetUniformLocation(m_shaders.at("god").handle, "QuadTex"), GLint(4));
   
     glBindVertexArray(screen_quad_object.vertex_AO);
   
@@ -619,6 +624,8 @@ void ApplicationSolar::initializeShaderPrograms() {
 
   m_shaders.emplace("screenquad", shader_program{m_resource_path + "shaders/screenquad.vert",
                                            m_resource_path + "shaders/screenquad.frag"});
+  m_shaders.emplace("god", shader_program{m_resource_path + "shaders/god.vert",
+                                           m_resource_path + "shaders/god.frag"});
   m_shaders.emplace("white", shader_program{m_resource_path + "shaders/white.vert",
                                             m_resource_path + "shaders/white.frag"});
   m_shaders.emplace("black", shader_program{m_resource_path + "shaders/black.vert",
@@ -680,6 +687,11 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.at("screenquad").u_locs["HorMirror"] = -1;
   m_shaders.at("screenquad").u_locs["VerMirror"] = -1;
   m_shaders.at("screenquad").u_locs["GaussBlur"] = -1;
+
+  m_shaders.at("god").u_locs["QuadTex"] = -1;
+  m_shaders.at("god").u_locs["LightPosition"] = -1;
+  m_shaders.at("god").u_locs["ViewMatrix"] = -1;
+  m_shaders.at("god").u_locs["ProjectionMatrix"] = -1;
 }
 
 // generate stars
