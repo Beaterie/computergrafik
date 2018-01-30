@@ -78,7 +78,7 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path):Application
     initializeTextures(i, 0);
   }
   // earth at night texture
-  //initializeSkyboxTex();
+  initializeSkyboxTex();
   initializeTextures(11, 1);
   initializeNormalMaps();
   
