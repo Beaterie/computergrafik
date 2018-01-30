@@ -34,6 +34,8 @@ class ApplicationSolar : public Application {
   void upload_orbits(std::shared_ptr<planet> planet) const;
   // upload skybox
   void upload_skybox() const;
+
+  void upload_lightframebuffer() const;
   // upload screen quad
   void upload_screenquad() const;
 
