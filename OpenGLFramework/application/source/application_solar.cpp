@@ -562,21 +562,21 @@ void ApplicationSolar::mouseCallback(double pos_x, double pos_y) {
   updateView();
 }
 
-void ApplicationSolar::upload_lightframebuffer() const {
-  // bind to the default framebuffer
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+// void ApplicationSolar::upload_lightframebuffer() const {
+//   // bind to the default framebuffer
+//   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   
-    glUseProgram(m_shaders.at("god").handle);
-    // bind texture to shader
-    glActiveTexture(GL_TEXTURE4);
-    glBindTexture(GL_TEXTURE_2D, light_framebuff.handle);
-    glUniform1i(glGetUniformLocation(m_shaders.at("god").handle, "QuadTex"), GLint(4));
+//     glUseProgram(m_shaders.at("god").handle);
+//     // bind texture to shader
+//     glActiveTexture(GL_TEXTURE4);
+//     glBindTexture(GL_TEXTURE_2D, light_framebuff.handle);
+//     glUniform1i(glGetUniformLocation(m_shaders.at("god").handle, "QuadTex"), GLint(4));
   
-    glBindVertexArray(screen_quad_object.vertex_AO);
+//     glBindVertexArray(screen_quad_object.vertex_AO);
   
-    // draw 
-    glDrawArrays(screen_quad_object.draw_mode, NULL, screen_quad_object.num_elements);
-}
+//     // draw 
+//     glDrawArrays(screen_quad_object.draw_mode, NULL, screen_quad_object.num_elements);
+// }
 
 void ApplicationSolar::upload_screenquad() const {
   // bind to the default framebuffer
@@ -588,11 +588,9 @@ void ApplicationSolar::upload_screenquad() const {
   glBindTexture(GL_TEXTURE_2D, framebuff.handle);
   glUniform1i(glGetUniformLocation(m_shaders.at("screenquad").handle, "QuadTex"), GLint(3));
 
-  glUseProgram(m_shaders.at("screenquad").handle);
-  // bind texture to shader
   glActiveTexture(GL_TEXTURE4);
   glBindTexture(GL_TEXTURE_2D, light_framebuff.handle);
-  glUniform1i(glGetUniformLocation(m_shaders.at("screenquad").handle, "QuadTex"), GLint(4));
+  glUniform1i(glGetUniformLocation(m_shaders.at("screenquad").handle, "LightTex"), GLint(4));
 
   glBindVertexArray(screen_quad_object.vertex_AO);
 
@@ -685,6 +683,7 @@ void ApplicationSolar::initializeShaderPrograms() {
 
   //m_shaders.at("screenquad").u_locs["blur"] = -1;
   m_shaders.at("screenquad").u_locs["QuadTex"] = -1;
+  m_shaders.at("screenquad").u_locs["LightTex"] = -1;
   m_shaders.at("screenquad").u_locs["MisterGrey"] = -1;
   m_shaders.at("screenquad").u_locs["HorMirror"] = -1;
   m_shaders.at("screenquad").u_locs["VerMirror"] = -1;

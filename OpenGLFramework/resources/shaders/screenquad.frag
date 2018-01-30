@@ -3,6 +3,7 @@ in vec2 pass_uv;
 in vec4 gl_FragCoord;
 
 uniform sampler2D QuadTex;
+uniform sampler2D LightTex;
 uniform bool MisterGrey;
 uniform bool GaussBlur;
 uniform mat4 ViewMatrix;
@@ -61,7 +62,7 @@ void main() {
   // Divide by number of samples and scale by control factor.
   deltaTexCoord *= 1.0f / NUM_SAMPLES * Density;
   // Store initial sample.
-   vec3 color = texture2D(QuadTex, texCoord).xyz;
+   vec3 color = texture2D(LightTex, texCoord).xyz;
   // Set up illumination decay factor.
    float illuminationDecay = 1.0f;
   // Evaluate summation from Equation 3 NUM_SAMPLES iterations.
@@ -70,7 +71,7 @@ void main() {
     // Step sample location along ray.
     texCoord -= deltaTexCoord;
     // Retrieve sample at new location.
-    vec3 sample = texture2D(QuadTex, texCoord).xyz;
+    vec3 sample = texture2D(LightTex, texCoord).xyz;
     // Apply sample attenuation scale/decay factors.
     sample *= illuminationDecay * Weight;
     // Accumulate combined color.
