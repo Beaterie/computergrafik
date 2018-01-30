@@ -24,8 +24,7 @@ using namespace gl;
 
 
 
-ApplicationSolar::ApplicationSolar(std::string const& resource_path)
- :Application{resource_path} {
+ApplicationSolar::ApplicationSolar(std::string const& resource_path):Application{resource_path} {
 
   // enable transparency
   glEnable(GL_BLEND);
@@ -327,6 +326,7 @@ void ApplicationSolar::render() const {
 
   glBindFramebuffer(GL_FRAMEBUFFER, light_framebuff.handle);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+<<<<<<< HEAD
   glClearColor(0.25f, 0.25f, 0.25f, 0.0f);
 
   // bind shader to upload uniforms
@@ -334,6 +334,9 @@ void ApplicationSolar::render() const {
   // sun position
   glUniform3fv(m_shaders.at("screenquad").u_locs.at("SunPosition"), 1,
     glm::value_ptr(glm::fvec3{0.0f,0.0f,0.0f}));
+=======
+  glClearColor(0.4f, 0.4f, 0.4f, 0.0f);
+>>>>>>> branch
 
   shadermode = "white";
   upload_sun(all_planets[0], shadermode, all_texture_objects[0]);
@@ -582,6 +585,7 @@ void ApplicationSolar::upload_lightframebuffer() const {
   // bind to the default framebuffer
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   
+<<<<<<< HEAD
   glUseProgram(m_shaders.at("screenquad").handle);
   // bind texture to shader
   glActiveTexture(GL_TEXTURE4);
@@ -592,6 +596,18 @@ void ApplicationSolar::upload_lightframebuffer() const {
 
   // draw 
   glDrawArrays(screen_quad_object.draw_mode, NULL, screen_quad_object.num_elements);
+=======
+    glUseProgram(m_shaders.at("screenquad").handle);
+    // bind texture to shader
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_2D, light_framebuff.handle);
+    glUniform1i(glGetUniformLocation(m_shaders.at("screenquad").handle, "QuadTex"), GLint(4));
+  
+    glBindVertexArray(screen_quad_object.vertex_AO);
+  
+    // draw 
+    glDrawArrays(screen_quad_object.draw_mode, NULL, screen_quad_object.num_elements);
+>>>>>>> branch
 }
 
 void ApplicationSolar::upload_screenquad() const {
